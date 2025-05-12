@@ -29,7 +29,7 @@ public class AuthenticationService : IAuthenticationService
     {
         try
         {
-            var userSpecification = new UserByEmailSpecification(email);
+            var userSpecification = new UserByEmailSpecification(email.Trim().ToLower());
             var user = await _userRepository.FirstOrDefaultAsync(userSpecification, cancellationToken);
 
             if (user == null)

@@ -6,3 +6,4 @@ global using CRM.Identity.Domain.Common.Events;
 global using CRM.Identity.Domain.Common.Models;
 global using CRM.Identity.Domain.Entities.Users.Enums;
 global using FluentValidation;
+global using CRM.Identity.Domain.Entities.Users.DomainEvents;

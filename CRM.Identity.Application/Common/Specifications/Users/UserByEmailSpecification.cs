@@ -3,7 +3,7 @@
 public class UserByEmailSpecification : BaseSpecification<User>
 {
     public UserByEmailSpecification(string email)
-        : base(user => user.Email.ToLower() == email.ToLower())
+        : base(user => user.Email == email)
     {
     }
 }
