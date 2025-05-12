@@ -6,6 +6,7 @@ public static class DependencyInjection
     {
         services.AddSingeltonServices();
         services.AddScopedServices();
+        services.AddEventHandlers();
 
         services.AddCompression();
         services.ConfigureCors();
@@ -73,6 +74,11 @@ public static class DependencyInjection
         services.AddScoped<IOutboxService, OutboxService>();
         services.AddScoped<IEventPublisher, EventPublisher>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+    }
+
+    private static void AddEventHandlers(this IServiceCollection services) 
+    {
+        services.AddScoped<IDomainEventHandler<UserCreatedEvent>, UserCreatedEventHandler>();
     }
 
     private static void AddCompression(this IServiceCollection services)
