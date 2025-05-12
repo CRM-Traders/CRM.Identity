@@ -1,2 +1,15 @@
-﻿global using Microsoft.Extensions.Configuration;
+﻿global using System.Text.Json;
+global using CRM.Identity.Application.Common.Abstractions.Users;
+global using CRM.Identity.Application.Common.Persistence;
+global using CRM.Identity.Application.Common.Persistence.Repositories;
+global using CRM.Identity.Application.Common.Publishers;
+global using CRM.Identity.Application.Common.Services;
+global using CRM.Identity.Domain.Common.Events;
+global using CRM.Identity.Domain.Entities.OutboxMessages;
+global using CRM.Identity.Infrastructure.Contexts;
+global using CRM.Identity.Infrastructure.Publishers;
+global using CRM.Identity.Infrastructure.Services;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;

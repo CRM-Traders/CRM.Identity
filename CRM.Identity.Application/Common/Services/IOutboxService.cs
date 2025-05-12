@@ -1,4 +1,4 @@
-﻿namespace CRM.Identity.Application.Common.Abstractions;
+﻿namespace CRM.Identity.Application.Common.Services;
 
 public interface IOutboxService
 {

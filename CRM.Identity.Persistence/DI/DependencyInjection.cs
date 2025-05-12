@@ -1,10 +1,4 @@
-﻿using CRM.Identity.Application.Common.Abstractions.Mediators;
-using CRM.Identity.Application.Common.Persistence.Repositories;
-using CRM.Identity.Persistence.Databases;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace CRM.Identity.Persistence.DI;
+﻿namespace CRM.Identity.Persistence.DI;
 
 public static class DependencyInjection
 {
@@ -14,8 +8,6 @@ public static class DependencyInjection
         options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
-
-        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IOutboxRepository, OutboxRepository>();

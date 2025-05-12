@@ -1,9 +1,14 @@
 var builder = WebApplication.CreateBuilder(args);
 {
-    builder.Services.AddApplication();
+
+    builder.Services.AddHttpContextAccessor();
+    
+    builder.Services
+        .AddApplication()
+        .AddInfrastructure(builder.Configuration)
+        .AddPersistence(builder.Configuration);
 
     builder.Services.AddControllers();
-
     builder.Services.AddOpenApi();
 
     builder.Logging.ClearProviders();
