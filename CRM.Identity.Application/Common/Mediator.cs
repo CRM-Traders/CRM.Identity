@@ -8,7 +8,7 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
     {
         var requestType = request.GetType();
 
-        var factory = (Func<IServiceProvider, IRequest<TResponse>, CancellationToken, ValueTask<TResponse>>)
+        var factory = (Func<IServiceProvider, IRequest<TResponse>, CancellationToken, ValueTask<Result<TResponse>>>)
             _handlerFactories.GetOrAdd(requestType, type => CreateHandlerFactory<TResponse>(type));
 
         return factory(_serviceProvider, request, cancellationToken);
@@ -53,7 +53,7 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
             executeBlock
         );
 
-        var lambda = Expression.Lambda<Func<IServiceProvider, IRequest<TResponse>, CancellationToken, ValueTask<TResponse>>>(
+        var lambda = Expression.Lambda<Func<IServiceProvider, IRequest<TResponse>, CancellationToken, ValueTask<Result<TResponse>>>>(
             combinedBlock, serviceProviderParam, requestParam, cancellationTokenParam);
 
         return lambda.Compile();

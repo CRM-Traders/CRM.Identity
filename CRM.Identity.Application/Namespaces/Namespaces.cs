@@ -4,3 +4,6 @@ global using System.Linq.Expressions;
 global using System.Reflection;
 global using Microsoft.Extensions.DependencyInjection;
 global using CRM.Identity.Domain.Common.Models;
+global using FluentValidation;
+global using CRM.Identity.Application.Common.Behaviors;
+global using CRM.Identity.Application.Common;

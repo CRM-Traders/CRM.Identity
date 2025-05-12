@@ -14,4 +14,8 @@
     <ProjectReference Include="..\CRM.Identity.Domain\CRM.Identity.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\" />
+  </ItemGroup>
+
 </Project>
