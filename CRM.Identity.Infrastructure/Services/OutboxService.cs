@@ -11,7 +11,11 @@ public class OutboxService(
         foreach (var domainEvent in domainEvents)
         {
             var serializedContent = JsonSerializer.Serialize(domainEvent, domainEvent.GetType());
-            var outboxMessage = OutboxMessage.Create(domainEvent, serializedContent);
+            var outboxMessage = OutboxMessage.Create(
+                domainEvent,
+                domainEvent.AggregateId,
+                domainEvent.AggregateType,
+                serializedContent);
             await _outboxRepository.AddAsync(outboxMessage, cancellationToken);
         }
 

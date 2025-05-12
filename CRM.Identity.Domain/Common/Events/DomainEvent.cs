@@ -4,10 +4,14 @@ public abstract class DomainEvent : IDomainEvent
 {
     public Guid Id { get; }
     public DateTimeOffset OccurredOn { get; }
+    public Guid AggregateId { get; }
+    public string AggregateType { get; }
 
-    protected DomainEvent()
+    protected DomainEvent(Guid aggregateId, string aggregateType)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTimeOffset.UtcNow;
+        AggregateId = aggregateId;
+        AggregateType = aggregateType;
     }
 }
