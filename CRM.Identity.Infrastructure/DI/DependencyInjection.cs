@@ -4,10 +4,100 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingeltonServices();
+        services.AddScopedServices();
+        services.AddCompression();
+        services.ConfigureCors();
+
+        services.AddOptions(configuration);
+        services.AddAsymmetricAuthentication(configuration);
+
+        return services;
+    }
+
+    private static void ConfigureCors(this IServiceCollection services) 
+    {
+        // TODO Restrict In Future Base On Origins Options
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll",
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+        });
+    }
+
+    private static void AddOptions(this IServiceCollection services, IConfiguration configuration) 
+    {
+        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!;
+        services.AddSingleton(jwtOptions);
+
+        var redisOptions = configuration.GetSection(nameof(RedisOptions)).Get<RedisOptions>()!;
+        services.AddSingleton(redisOptions);
+    }
+
+    private static void AddSingeltonServices(this IServiceCollection services) 
+    {
+        services.TryAddSingleton<IPasswordService, PasswordService>();
+        services.TryAddSingleton<IJwtTokenService, JwtTokenService>();
+    }
+
+    private static void AddScopedServices(this IServiceCollection services) 
+    {
         services.AddScoped<IUserContext, UserContext>();
         services.AddScoped<IOutboxService, OutboxService>();
         services.AddScoped<IEventPublisher, EventPublisher>();
+    }
 
-        return services;
+    private static void AddCompression(this IServiceCollection services)
+    {
+        services.Configure<GzipCompressionProviderOptions>(options =>
+        {
+            options.Level = System.IO.Compression.CompressionLevel.Fastest;
+        });
+
+        services.AddResponseCompression(options =>
+        {
+            options.Providers.Add<GzipCompressionProvider>();
+            options.EnableForHttps = true;
+        });
+    }
+
+    private static void AddAsymmetricAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!;
+
+        byte[] publicKeyBytes = Convert.FromBase64String(jwtOptions.PublicKey);
+
+        RSA rsaPublicKey = RSA.Create();
+        rsaPublicKey.ImportSubjectPublicKeyInfo(publicKeyBytes, out _);
+
+        var issuerSigningKey = new RsaSecurityKey(rsaPublicKey);
+
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = issuerSigningKey,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+        services.AddAuthorization();
     }
 }

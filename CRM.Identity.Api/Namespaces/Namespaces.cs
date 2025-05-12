@@ -1,6 +1,7 @@
 ﻿global using System.Text.Json;
 global using CRM.Identity.Api.Common.Middlewares;
 global using CRM.Identity.Api.Controllers.Base;
+global using CRM.Identity.Application.Common.Abstractions.Mediators;
 global using CRM.Identity.Application.DI;
 global using CRM.Identity.Domain.Common.Models;
 global using CRM.Identity.Infrastructure.DI;

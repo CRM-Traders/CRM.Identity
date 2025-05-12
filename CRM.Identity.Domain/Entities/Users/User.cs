@@ -9,4 +9,5 @@ public class User : AggregateRoot
     public string PasswordHash { get; private set; } = string.Empty;
     public string PasswordSalt { get; private set; } = string.Empty;
     public bool IsEmailConfirmed { get; private set; } = false;
+    public Role Role { get; private set; } = Role.User;
 }

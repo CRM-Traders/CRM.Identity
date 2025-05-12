@@ -1,6 +1,7 @@
 ﻿global using System.Collections.Concurrent;
 global using System.Linq.Expressions;
 global using System.Reflection;
+global using System.Security.Claims;
 global using CRM.Identity.Application.Common;
 global using CRM.Identity.Application.Common.Abstractions.Mediators;
 global using CRM.Identity.Application.Common.Behaviors;
@@ -9,5 +10,7 @@ global using CRM.Identity.Domain.Common.Entities;
 global using CRM.Identity.Domain.Common.Events;
 global using CRM.Identity.Domain.Common.Models;
 global using CRM.Identity.Domain.Entities.OutboxMessages;
+global using CRM.Identity.Domain.Entities.Users;
 global using FluentValidation;
 global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.IdentityModel.Tokens;
