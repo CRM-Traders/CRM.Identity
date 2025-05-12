@@ -28,7 +28,6 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
 
         var castRequest = Expression.Convert(requestParam, requestType);
 
-        // Specify the generic method precisely to avoid ambiguity
         var getRequiredServiceMethod = typeof(ServiceProviderServiceExtensions)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .First(m => m.Name == "GetRequiredService" && m.IsGenericMethod && m.GetParameters().Length == 1);
@@ -37,7 +36,6 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
             getRequiredServiceMethod.MakeGenericMethod(handlerServiceType),
             serviceProviderParam);
 
-        // Similarly for GetService
         var getServiceMethod = typeof(ServiceProviderServiceExtensions)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .First(m => m.Name == "GetService" && m.IsGenericMethod && m.GetParameters().Length == 1);
@@ -46,7 +44,6 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
             getServiceMethod.MakeGenericMethod(pipelineServiceType),
             serviceProviderParam);
 
-        // Rest of the method remains the same
         var handlerVar = Expression.Variable(handlerServiceType, "handler");
         var pipelineVar = Expression.Variable(pipelineServiceType, "pipeline");
 
