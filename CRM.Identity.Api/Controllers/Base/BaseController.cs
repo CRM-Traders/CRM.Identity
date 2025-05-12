@@ -1,6 +1,4 @@
-﻿using CRM.Identity.Application.Common.Abstractions.Mediators;
-
-namespace CRM.Identity.Api.Controllers.Base;
+﻿namespace CRM.Identity.Api.Controllers.Base;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -63,9 +61,4 @@ public class BaseController(IMediator _mediator) : ControllerBase
             detail: result.Error ?? "An unexpected error occurred",
             statusCode: StatusCodes.Status400BadRequest);
     }
-}
-
-public readonly struct Unit
-{
-    public static Unit Value => new();
 }

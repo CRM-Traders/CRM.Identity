@@ -6,10 +6,13 @@ public static class DependencyInjection
     {
         services.AddSingeltonServices();
         services.AddScopedServices();
+
         services.AddCompression();
         services.ConfigureCors();
 
         services.AddOptions(configuration);
+        services.AddRedisConnection();
+
         services.AddAsymmetricAuthentication(configuration);
 
         return services;
@@ -43,6 +46,25 @@ public static class DependencyInjection
     {
         services.TryAddSingleton<IPasswordService, PasswordService>();
         services.TryAddSingleton<IJwtTokenService, JwtTokenService>();
+        services.TryAddSingleton<IRedisManager, RedisManager>();
+    }
+
+    private static void AddRedisConnection(this IServiceCollection services) 
+    {
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var redisOptions = sp.GetRequiredService<RedisOptions>();
+            var configOptions = new ConfigurationOptions
+            {
+                EndPoints = { redisOptions.ConnectionString },
+                Password = redisOptions.Password,
+                AbortOnConnectFail = false,
+                ConnectTimeout = 5000,
+                SyncTimeout = 5000
+            };
+
+            return ConnectionMultiplexer.Connect(configOptions);
+        });
     }
 
     private static void AddScopedServices(this IServiceCollection services) 
@@ -50,6 +72,7 @@ public static class DependencyInjection
         services.AddScoped<IUserContext, UserContext>();
         services.AddScoped<IOutboxService, OutboxService>();
         services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
     }
 
     private static void AddCompression(this IServiceCollection services)

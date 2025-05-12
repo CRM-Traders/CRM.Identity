@@ -1,8 +1,6 @@
 ﻿namespace CRM.Identity.Application.Features.Auth.Commands.Login;
 
-public sealed record LoginCommand(string Email, string Password) : IRequest<LoginResponse>;
-
-public sealed record LoginResponse(string AccessToken, string RefreshToken, int Exp);
+public sealed record LoginCommand(string Email, string Password) : IRequest<AuthenticationResult>;
 
 public sealed class LoginCommandValidator : AbstractValidator<LoginCommand> 
 {
@@ -19,21 +17,22 @@ public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
             .WithMessage("Password must be at least 6 characters long.");
     }
 }
-
-public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
+public sealed class LoginCommandHandler(IAuthenticationService _authenticationService) : IRequestHandler<LoginCommand, AuthenticationResult>
 {
-    private readonly IAuthenticationService _authenticationService;
-    public LoginCommandHandler(IAuthenticationService authenticationService)
+    public async ValueTask<Result<AuthenticationResult>> Handle(
+        LoginCommand request,
+        CancellationToken cancellationToken)
     {
-        _authenticationService = authenticationService;
-    }
-    public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
-    {
-        var result = await _authenticationService.LoginAsync(request.Email, request.Password);
+        var result = await _authenticationService.LoginAsync(
+            request.Email,
+            request.Password,
+            cancellationToken);
+
         if (result == null)
         {
-            throw new UnauthorizedAccessException("Invalid email or password.");
+            return Result.Failure<AuthenticationResult>("Invalid email or password", "Unauthorized");
         }
-        return new LoginResponse(result.AccessToken, result.RefreshToken, result.Exp);
+
+        return Result.Success(result);
     }
 }

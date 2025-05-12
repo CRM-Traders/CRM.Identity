@@ -1,6 +1,4 @@
-﻿using CRM.Identity.Application.Common.Abstractions.Mediators;
-
-namespace CRM.Identity.Application.Common;
+﻿namespace CRM.Identity.Application.Common;
 
 public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
 {
@@ -19,7 +17,6 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
     private static object CreateHandlerFactory<TResponse>(Type requestType)
     {
         var handlerInterfaceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, typeof(TResponse));
-
         var handlerServiceType = handlerInterfaceType;
 
         var pipelineBehaviorType = typeof(IPipelineBehavior<,>).MakeGenericType(requestType, typeof(TResponse));
@@ -31,14 +28,25 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
 
         var castRequest = Expression.Convert(requestParam, requestType);
 
+        // Specify the generic method precisely to avoid ambiguity
+        var getRequiredServiceMethod = typeof(ServiceProviderServiceExtensions)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .First(m => m.Name == "GetRequiredService" && m.IsGenericMethod && m.GetParameters().Length == 1);
+
         var getHandlerExpr = Expression.Call(
-            typeof(ServiceProviderServiceExtensions).GetMethod("GetRequiredService")!.MakeGenericMethod(handlerServiceType),
+            getRequiredServiceMethod.MakeGenericMethod(handlerServiceType),
             serviceProviderParam);
+
+        // Similarly for GetService
+        var getServiceMethod = typeof(ServiceProviderServiceExtensions)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .First(m => m.Name == "GetService" && m.IsGenericMethod && m.GetParameters().Length == 1);
 
         var getPipelineExpr = Expression.Call(
-            typeof(ServiceProviderServiceExtensions).GetMethod("GetService")!.MakeGenericMethod(pipelineServiceType),
+            getServiceMethod.MakeGenericMethod(pipelineServiceType),
             serviceProviderParam);
 
+        // Rest of the method remains the same
         var handlerVar = Expression.Variable(handlerServiceType, "handler");
         var pipelineVar = Expression.Variable(pipelineServiceType, "pipeline");
 
@@ -60,7 +68,6 @@ public sealed class Mediator(IServiceProvider _serviceProvider) : IMediator
 
         return lambda.Compile();
     }
-
     private static Expression BuildExecutionExpressions<TResponse>(
         Expression handlerExpr,
         Expression pipelineExpr,
