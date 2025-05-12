@@ -1,4 +1,6 @@
-﻿namespace CRM.Identity.Api.Controllers.Base;
+﻿using CRM.Identity.Application.Common.Abstractions.Mediators;
+
+namespace CRM.Identity.Api.Controllers.Base;
 
 [Route("api/[controller]")]
 [ApiController]

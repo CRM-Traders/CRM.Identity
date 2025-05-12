@@ -1,4 +1,4 @@
-﻿namespace CRM.Identity.Application.Common.Abstractions;
+﻿namespace CRM.Identity.Application.Common.Abstractions.Mediators;
 
 public interface IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {

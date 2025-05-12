@@ -1,6 +1,6 @@
-﻿namespace CRM.Identity.Domain.Common.Models;
+﻿namespace CRM.Identity.Domain.Common.Entities;
 
-public class AggregateRoot
+public abstract class AggregateRoot : AuditableEntity
 {
     private readonly List<IDomainEvent> _domainEvents = new();
 

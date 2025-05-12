@@ -7,9 +7,7 @@ public static class DependencyInjection
         var assembly = typeof(DependencyInjection).Assembly;
 
         services.AddSingleton<IMediator, Mediator>();
-
         services.AddValidatorsFromAssembly(assembly);
-
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         return services;
