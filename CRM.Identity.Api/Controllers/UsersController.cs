@@ -3,7 +3,7 @@
 public class UsersController(IMediator _send) : BaseController(_send)
 {
     [HttpPost("register")]
-    [Permission(1, "Register User", SectionConstants.Users, ActionType.C, Role.Admin | Role.Manager)]
+    [Permission(1, "Register User", SectionConstants.Users, ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

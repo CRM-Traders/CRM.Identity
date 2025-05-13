@@ -52,6 +52,18 @@ public static class DependencyInjection
         services.TryAddSingleton<IRedisManager, RedisManager>();
     }
 
+    private static void AddScopedServices(this IServiceCollection services)
+    {
+        services.AddScoped<IUserContext, UserContext>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+        services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<IOutboxService, OutboxService>();
+        services.AddScoped<IOutboxProcessor, OutboxProcessor>();
+
+        services.AddScoped<IPermissionSynchronizer, PermissionSynchronizer>();
+    }
+
     private static void AddRedisConnection(this IServiceCollection services) 
     {
         services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -68,16 +80,6 @@ public static class DependencyInjection
 
             return ConnectionMultiplexer.Connect(configOptions);
         });
-    }
-
-    private static void AddScopedServices(this IServiceCollection services) 
-    {
-        services.AddScoped<IUserContext, UserContext>();
-        services.AddScoped<IAuthenticationService, AuthenticationService>();
-
-        services.AddScoped<IEventPublisher, EventPublisher>();
-        services.AddScoped<IOutboxService, OutboxService>();
-        services.AddScoped<IOutboxProcessor, OutboxProcessor>();
     }
 
     private static void AddEventHandlers(this IServiceCollection services) 

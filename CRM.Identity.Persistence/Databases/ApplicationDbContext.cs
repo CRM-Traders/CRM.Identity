@@ -14,6 +14,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+
 
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

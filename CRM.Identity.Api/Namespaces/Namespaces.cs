@@ -1,15 +1,16 @@
 ﻿global using System.Text.Json;
-global using CRM.Identity.Api.Common.Attributes;
 global using CRM.Identity.Api.Common.Constants;
 global using CRM.Identity.Api.Common.Middlewares;
 global using CRM.Identity.Api.Controllers.Base;
 global using CRM.Identity.Application.Common.Abstractions.Mediators;
+global using CRM.Identity.Application.Common.Services.Synchronizer;
 global using CRM.Identity.Application.DI;
 global using CRM.Identity.Application.Features.Auth.Commands.InvalidateAllSessions;
 global using CRM.Identity.Application.Features.Auth.Commands.Login;
 global using CRM.Identity.Application.Features.Auth.Commands.Logout;
 global using CRM.Identity.Application.Features.Auth.Commands.RefreshTokens;
 global using CRM.Identity.Application.Features.Users.Commands;
+global using CRM.Identity.Domain.Common.Attributes;
 global using CRM.Identity.Domain.Common.Models;
 global using CRM.Identity.Domain.Entities.Permissions.Enums;
 global using CRM.Identity.Domain.Entities.Users.Enums;

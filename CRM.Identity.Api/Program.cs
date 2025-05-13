@@ -40,6 +40,12 @@ var app = builder.Build();
 
     app.MapControllers();
 
+    using (var scope = app.Services.CreateScope())
+    {
+        var permissionSynchronizer = scope.ServiceProvider.GetRequiredService<IPermissionSynchronizer>();
+        await permissionSynchronizer.SynchronizePermissionsAsync();
+    }
+
     app.Run();
 }
 

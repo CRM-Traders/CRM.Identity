@@ -1,4 +1,4 @@
-﻿namespace CRM.Identity.Api.Common.Attributes;
+﻿namespace CRM.Identity.Domain.Common.Attributes;
 
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
@@ -9,14 +9,14 @@ public class PermissionAttribute : Attribute
     public string Section { get; } = string.Empty;
     public string? Description { get; }
     public ActionType ActionType { get; }
-    public Role AllowedRoles { get; } 
+    public string AllowedRoles { get; } 
 
     public PermissionAttribute(
         int order,
         string title,
         string section,
         ActionType actionType,
-        Role roles,
+        string allowedRoles,
         string description)
     {
         Order = order;
@@ -24,7 +24,7 @@ public class PermissionAttribute : Attribute
         Description = description;
         Section = section;
         ActionType = actionType;
-        AllowedRoles = roles;
+        AllowedRoles = allowedRoles;
     }
 
     public PermissionAttribute(
@@ -32,12 +32,12 @@ public class PermissionAttribute : Attribute
         string title,
         string section,
         ActionType actionType,
-        Role roles)
+        string allowedRoles)
     {
         Order = order;
         Title = title;
         Section = section;
         ActionType = actionType;
-        AllowedRoles = roles;
+        AllowedRoles = allowedRoles;
     }
 }
