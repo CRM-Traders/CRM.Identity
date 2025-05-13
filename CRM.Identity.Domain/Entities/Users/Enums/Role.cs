@@ -1,5 +1,6 @@
 ﻿namespace CRM.Identity.Domain.Entities.Users.Enums;
 
+[Flags]
 public enum Role
 {
     None = 0,

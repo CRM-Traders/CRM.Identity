@@ -4,6 +4,7 @@ global using System.Text.Json.Serialization;
 global using CRM.Identity.Domain.Common.Entities;
 global using CRM.Identity.Domain.Common.Events;
 global using CRM.Identity.Domain.Common.Models;
+global using CRM.Identity.Domain.Entities.Permissions.Enums;
+global using CRM.Identity.Domain.Entities.Users.DomainEvents;
 global using CRM.Identity.Domain.Entities.Users.Enums;
 global using FluentValidation;
-global using CRM.Identity.Domain.Entities.Users.DomainEvents;
