@@ -1,4 +1,7 @@
-﻿namespace CRM.Identity.Infrastructure.DI;
+﻿using CRM.Identity.Application.Common.Services.Outbox;
+using CRM.Identity.Infrastructure.Services.Outbox;
+
+namespace CRM.Identity.Infrastructure.DI;
 
 public static class DependencyInjection
 {
@@ -71,9 +74,11 @@ public static class DependencyInjection
     private static void AddScopedServices(this IServiceCollection services) 
     {
         services.AddScoped<IUserContext, UserContext>();
-        services.AddScoped<IOutboxService, OutboxService>();
-        services.AddScoped<IEventPublisher, EventPublisher>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+        services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<IOutboxService, OutboxService>();
+        services.AddScoped<IOutboxProcessor, OutboxProcessor>();
     }
 
     private static void AddEventHandlers(this IServiceCollection services) 

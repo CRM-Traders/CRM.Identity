@@ -25,5 +25,7 @@ public sealed class UserCreatedEvent : DomainEvent
         PhoneNumber = phoneNumber;
         PasswordHash = passwordHash;
         PasswordSalt = passwordSalt;
+
+        ProcessingStrategy = ProcessingStrategy.Immediate;
     }
 }

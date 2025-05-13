@@ -17,8 +17,8 @@ public class EventPublisher : IEventPublisher
     {
         var domainEventType = domainEvent.GetType();
         var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEventType);
-
         var handlers = _serviceProvider.GetServices(handlerType);
+
         if (!handlers.Any())
         {
             _logger.LogWarning("No handlers registered for {DomainEventType}", domainEventType.Name);

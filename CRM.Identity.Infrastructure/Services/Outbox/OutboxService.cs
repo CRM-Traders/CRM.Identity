@@ -1,13 +1,18 @@
-﻿namespace CRM.Identity.Infrastructure.Services;
+﻿using CRM.Identity.Application.Common.Services.Outbox;
+
+namespace CRM.Identity.Infrastructure.Services.Outbox;
 
 public class OutboxService(
     IOutboxRepository _outboxRepository,
     IEventPublisher _eventPublisher,
-    ILogger<OutboxService> _logger,
-    IUnitOfWork _unitOfWork) : IOutboxService
+    ILogger<OutboxService> _logger) : IOutboxService
 {
-    public async Task SaveEventsAsync(IEnumerable<IDomainEvent> domainEvents, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyDictionary<Guid, OutboxMessage>> CreateOutboxMessagesAsync(
+        IEnumerable<IDomainEvent> domainEvents,
+        CancellationToken cancellationToken = default)
     {
+        var result = new Dictionary<Guid, OutboxMessage>();
+
         foreach (var domainEvent in domainEvents)
         {
             var serializedContent = JsonSerializer.Serialize(domainEvent, domainEvent.GetType());
@@ -16,10 +21,17 @@ public class OutboxService(
                 domainEvent.AggregateId,
                 domainEvent.AggregateType,
                 serializedContent);
+
+            if (domainEvent.ProcessingStrategy == ProcessingStrategy.Immediate)
+            {
+                outboxMessage.MarkForImmediateProcessing();
+            }
+
             await _outboxRepository.AddAsync(outboxMessage, cancellationToken);
+            result[domainEvent.Id] = outboxMessage;
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return result;
     }
 
     public async Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken = default)
@@ -56,7 +68,5 @@ public class OutboxService(
                 message.MarkAsFailed(ex.Message);
             }
         }
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

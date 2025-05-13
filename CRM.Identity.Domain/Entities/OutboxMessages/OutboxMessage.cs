@@ -11,6 +11,8 @@ public class OutboxMessage : Entity
 
     public Guid AggregateId { get; private set; }
     public string AggregateType { get; private set; }
+    public MessagePriority Priority { get; private set; } = MessagePriority.Normal;
+
 
     private OutboxMessage(
         Guid id,
@@ -44,6 +46,11 @@ public class OutboxMessage : Entity
         ProcessedAt = DateTimeOffset.UtcNow;
     }
 
+    public void MarkForImmediateProcessing()
+    {
+        Priority = MessagePriority.High;
+    }
+
     public void MarkAsFailed(string error)
     {
         Error = error;
@@ -54,4 +61,10 @@ public class OutboxMessage : Entity
     {
         Error = null;
     }
+}
+
+public enum MessagePriority
+{
+    Normal = 0,
+    High = 1
 }
