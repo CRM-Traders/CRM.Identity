@@ -1,7 +1,4 @@
-﻿using CRM.Identity.Application.Common.Services.Outbox;
-using CRM.Identity.Infrastructure.Services.Outbox;
-
-namespace CRM.Identity.Infrastructure.DI;
+﻿namespace CRM.Identity.Infrastructure.DI;
 
 public static class DependencyInjection
 {
@@ -18,6 +15,8 @@ public static class DependencyInjection
         services.AddRedisConnection();
 
         services.AddAsymmetricAuthentication(configuration);
+
+        services.AddHostedService<OutboxProcessorWorker>();
 
         return services;
     }

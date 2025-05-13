@@ -25,6 +25,8 @@ global using CRM.Identity.Infrastructure.EventHandlers.Users;
 global using CRM.Identity.Infrastructure.Managers;
 global using CRM.Identity.Infrastructure.Publishers;
 global using CRM.Identity.Infrastructure.Services.Auth;
+global using CRM.Identity.Infrastructure.Services.Outbox;
+global using CRM.Identity.Infrastructure.Workers;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.AspNetCore.Builder;
 global using Microsoft.AspNetCore.Http;

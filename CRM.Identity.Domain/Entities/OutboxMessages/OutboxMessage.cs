@@ -11,8 +11,10 @@ public class OutboxMessage : Entity
 
     public Guid AggregateId { get; private set; }
     public string AggregateType { get; private set; }
+    public bool IsClaimed { get; private set; }
+    public string? ClaimedBy { get; private set; }
+    public DateTimeOffset? ClaimedAt { get; private set; }
     public MessagePriority Priority { get; private set; } = MessagePriority.Normal;
-
 
     private OutboxMessage(
         Guid id,
@@ -60,6 +62,24 @@ public class OutboxMessage : Entity
     public void ClearError()
     {
         Error = null;
+    }
+
+    public bool ClaimForProcessing(string instanceId)
+    {
+        if (IsClaimed)
+            return false;
+
+        IsClaimed = true;
+        ClaimedBy = instanceId;
+        ClaimedAt = DateTimeOffset.UtcNow;
+        return true;
+    }
+
+    public void ReleaseClaim()
+    {
+        IsClaimed = false;
+        ClaimedBy = null;
+        ClaimedAt = null;
     }
 }
 

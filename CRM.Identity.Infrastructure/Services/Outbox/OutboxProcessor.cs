@@ -2,30 +2,42 @@
 
 public class OutboxProcessor : IOutboxProcessor
 {
-    private readonly IOutboxService _outboxService;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OutboxProcessor> _logger;
+    private readonly IConnectionMultiplexer _redis;
+    private readonly string _instanceId;
 
     public OutboxProcessor(
-        IOutboxService outboxService,
-        IUnitOfWork unitOfWork,
-        ILogger<OutboxProcessor> logger)
+        IServiceProvider serviceProvider,
+        ILogger<OutboxProcessor> logger,
+        IConnectionMultiplexer redis)
     {
-        _outboxService = outboxService;
-        _unitOfWork = unitOfWork;
+        _serviceProvider = serviceProvider;
         _logger = logger;
+        _redis = redis;
+        _instanceId = Guid.NewGuid().ToString("N");
     }
 
     public async Task ProcessPendingMessagesAsync(CancellationToken cancellationToken = default)
     {
-        try
+        var db = _redis.GetDatabase();
+        var partitionKey = $"outbox:instance:{_instanceId}:partition";
+        var partitionCount = 16; 
+
+        var partitionId = (int)await db.StringGetAsync(partitionKey);
+        if (partitionId == 0)
         {
-            await _outboxService.ProcessOutboxMessagesAsync(cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            partitionId = Random.Shared.Next(1, partitionCount + 1);
+            await db.StringSetAsync(partitionKey, partitionId, TimeSpan.FromHours(1));
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error processing outbox messages");
-        }
+
+        _logger.LogInformation("Processing outbox messages for partition {PartitionId}", partitionId);
+
+        using var scope = _serviceProvider.CreateScope();
+        var outboxService = scope.ServiceProvider.GetRequiredService<IOutboxService>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        await outboxService.ProcessOutboxMessagesForPartitionAsync(partitionId, partitionCount, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
