@@ -8,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
         .AddInfrastructure(builder.Configuration)
         .AddPersistence(builder.Configuration);
 
+    builder.Services.AddRouting(options =>
+    {
+        options.LowercaseUrls = true;
+        options.LowercaseQueryStrings = true;
+    });
     builder.Services.AddControllers();
     builder.Services.AddOpenApi();
 
