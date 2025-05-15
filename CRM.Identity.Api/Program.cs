@@ -1,8 +1,9 @@
+using CRM.Identity.Api.Transformers;
+
 var builder = WebApplication.CreateBuilder(args);
 {
-
     builder.Services.AddHttpContextAccessor();
-    
+
     builder.Services
         .AddApplication()
         .AddInfrastructure(builder.Configuration)
@@ -14,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
         options.LowercaseQueryStrings = true;
     });
     builder.Services.AddControllers();
-    builder.Services.AddOpenApi();
+
+    builder.Services.AddOpenApi(options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
 
     builder.Logging.ClearProviders();
     builder.Logging.AddConsole();
@@ -27,7 +29,13 @@ var app = builder.Build();
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
-        app.MapScalarApiReference();
+        app.MapScalarApiReference(options =>
+        {
+            options
+                .WithTitle("CRM Identity API")
+                .WithTheme(ScalarTheme.Purple)
+                .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+        });
     }
     else
     {
@@ -48,4 +56,3 @@ var app = builder.Build();
 
     app.Run();
 }
-
