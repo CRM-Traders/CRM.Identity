@@ -17,23 +17,20 @@ public sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvide
 
         if (authenticationSchemes.Any(authScheme => authScheme.Name == JwtBearerDefaults.AuthenticationScheme))
         {
-            // კომპონენტების ინიციალიზაცია
             document.Components ??= new OpenApiComponents();
             document.Components.SecuritySchemes ??= new Dictionary<string, OpenApiSecurityScheme>();
 
-            // JWT Bearer სქემის დამატება
             var bearerScheme = new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.Http,
                 Scheme = "bearer",
                 In = ParameterLocation.Header,
                 BearerFormat = "JWT",
-                Description = "შეიყვანეთ JWT ტოკენი Bearer პრეფიქსით"
+                Description = "Enter Jwt Token only",
             };
 
             document.Components.SecuritySchemes.Add("Bearer", bearerScheme);
 
-            // უსაფრთხოების მოთხოვნების დამატება ყველა ოპერაციისთვის
             var securityRequirement = new OpenApiSecurityRequirement
             {
                 [new OpenApiSecurityScheme

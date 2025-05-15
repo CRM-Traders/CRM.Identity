@@ -14,7 +14,8 @@ public sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshToke
     }
 }
 
-public sealed class RefreshTokenCommandHandler(IAuthenticationService _authenticationService) : IRequestHandler<RefreshTokenCommand, RefreshTokenResponse>
+public sealed class RefreshTokenCommandHandler(IAuthenticationService _authenticationService)
+    : IRequestHandler<RefreshTokenCommand, RefreshTokenResponse>
 {
     public async ValueTask<Result<RefreshTokenResponse>> Handle(
         RefreshTokenCommand request,
@@ -30,6 +31,6 @@ public sealed class RefreshTokenCommandHandler(IAuthenticationService _authentic
         return Result.Success(new RefreshTokenResponse(
             result.AccessToken,
             result.RefreshToken,
-            result.Exp));
+            result.ExpiresIn));
     }
 }

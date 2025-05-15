@@ -1,17 +1,10 @@
 ﻿namespace CRM.Identity.Persistence.Databases;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(
+    DbContextOptions<ApplicationDbContext> options,
+    IUserContext userContext)
+    : DbContext(options)
 {
-    private readonly IUserContext _userContext;
-
-    public ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options,
-        IUserContext userContext)
-        : base(options)
-    {
-        _userContext = userContext;
-    }
-
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Permission> Permissions => Set<Permission>();
@@ -33,8 +26,8 @@ public class ApplicationDbContext : DbContext
 
     private void ApplyAuditInformation()
     {
-        var userId = _userContext.Id.ToString();
-        var userIp = _userContext.IpAddress;
+        var userId = userContext.Id.ToString();
+        var userIp = userContext.IpAddress;
 
         foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {

@@ -21,7 +21,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static void ConfigureCors(this IServiceCollection services) 
+    private static void ConfigureCors(this IServiceCollection services)
     {
         // TODO Restrict In Future Base On Origins Options
         services.AddCors(options =>
@@ -36,7 +36,7 @@ public static class DependencyInjection
         });
     }
 
-    private static void AddOptions(this IServiceCollection services, IConfiguration configuration) 
+    private static void AddOptions(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!;
         services.AddSingleton(jwtOptions);
@@ -45,7 +45,7 @@ public static class DependencyInjection
         services.AddSingleton(redisOptions);
     }
 
-    private static void AddSingeltonServices(this IServiceCollection services) 
+    private static void AddSingeltonServices(this IServiceCollection services)
     {
         services.TryAddSingleton<IPasswordService, PasswordService>();
         services.TryAddSingleton<IJwtTokenService, JwtTokenService>();
@@ -56,7 +56,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IUserContext, UserContext>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
-
+        services.AddScoped<ITotpService, TotpService>();
         services.AddScoped<IEventPublisher, EventPublisher>();
         services.AddScoped<IOutboxService, OutboxService>();
         services.AddScoped<IOutboxProcessor, OutboxProcessor>();
@@ -64,7 +64,7 @@ public static class DependencyInjection
         services.AddScoped<IPermissionSynchronizer, PermissionSynchronizer>();
     }
 
-    private static void AddRedisConnection(this IServiceCollection services) 
+    private static void AddRedisConnection(this IServiceCollection services)
     {
         services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
@@ -82,7 +82,7 @@ public static class DependencyInjection
         });
     }
 
-    private static void AddEventHandlers(this IServiceCollection services) 
+    private static void AddEventHandlers(this IServiceCollection services)
     {
         services.AddScoped<IDomainEventHandler<UserCreatedEvent>, UserCreatedEventHandler>();
     }
@@ -114,10 +114,10 @@ public static class DependencyInjection
 
 
         services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters

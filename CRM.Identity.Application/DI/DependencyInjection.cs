@@ -9,7 +9,6 @@ public static class DependencyInjection
         services.AddScoped<IMediator, Mediator>();
         services.AddValidatorsFromAssembly(assembly);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
         RegisterHandlers(services, assembly);
 
         return services;
