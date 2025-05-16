@@ -8,7 +8,8 @@ public class ApplicationDbContext(
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Permission> Permissions => Set<Permission>();
-
+    public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<RoleDefaultPermission> RoleDefaultPermissions => Set<RoleDefaultPermission>();
 
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -46,6 +47,7 @@ public class ApplicationDbContext(
                     {
                         entry.Entity.SetDeletionTracking(userId, userIp);
                     }
+
                     break;
 
                 case EntityState.Deleted:

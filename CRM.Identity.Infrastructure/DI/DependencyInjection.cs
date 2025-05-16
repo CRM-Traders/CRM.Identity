@@ -1,4 +1,8 @@
-﻿namespace CRM.Identity.Infrastructure.DI;
+﻿using CRM.Identity.Application.Common.Constants;
+using CRM.Identity.Domain.Entities.Permissions.Enums;
+using CRM.Identity.Infrastructure.Authorization;
+
+namespace CRM.Identity.Infrastructure.DI;
 
 public static class DependencyInjection
 {
@@ -62,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 
         services.AddScoped<IPermissionSynchronizer, PermissionSynchronizer>();
+        services.AddScoped<IPermissionService, PermissionService>();
     }
 
     private static void AddRedisConnection(this IServiceCollection services)
@@ -133,6 +138,13 @@ public static class DependencyInjection
                 };
             });
 
-        services.AddAuthorization();
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("RequireAdminRole", policy =>
+                policy.RequireRole(RoleConstants.Admin));
+
+            options.AddPolicy("RequireUserManagement", policy =>
+                policy.Requirements.Add(new PermissionRequirement("Users", "Manage Users", ActionType.C)));
+        });
     }
 }

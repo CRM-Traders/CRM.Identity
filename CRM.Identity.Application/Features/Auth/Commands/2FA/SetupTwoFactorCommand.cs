@@ -32,6 +32,7 @@ public sealed class SetupTwoFactorCommandHandler(
         var secret = totpService.GenerateSecret();
         var qrCodeUri = totpService.GenerateQrCodeUri(AppName, user.Email, secret);
 
+
         user.EnableTwoFactorAuthentication(secret);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

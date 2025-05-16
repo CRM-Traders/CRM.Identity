@@ -34,11 +34,11 @@ public class AuthenticationService(
                 logger.LogWarning("Login failed: Invalid password for user {Email}", email);
                 return null;
             }
- 
+
             if (user.IsTwoFactorEnabled && user.IsTwoFactorVerified)
             {
                 if (string.IsNullOrEmpty(twoFactorCode))
-                { 
+                {
                     return AuthenticationResult.TwoFactorRequired(user.Id);
                 }
 
@@ -51,6 +51,7 @@ public class AuthenticationService(
 
             var accessToken = jwtTokenService.GenerateJwtToken(user);
             var refreshToken = jwtTokenService.GenerateRefreshToken();
+            var exp = DateTimeOffset.UtcNow.AddMinutes(jwtOptions.AccessTokenValidityInMinutes).ToUnixTimeSeconds();
 
             await redisManager.SetRefreshTokenAsync(
                 user.Id,
@@ -75,8 +76,7 @@ public class AuthenticationService(
 
             return AuthenticationResult.Success(
                 accessToken,
-                refreshToken.Token,
-                jwtOptions.AccessTokenValidityInMinutes * 60);
+                refreshToken.Token, exp);
         }
         catch (Exception ex)
         {
@@ -109,15 +109,16 @@ public class AuthenticationService(
                 logger.LogWarning("Login failed: Invalid password for user {Email}", email);
                 return null;
             }
- 
+
             if (!user.UseRecoveryCode(recoveryCode))
             {
                 logger.LogWarning("Login failed: Invalid recovery code for user {Email}", email);
                 return null;
             }
- 
+
             var accessToken = jwtTokenService.GenerateJwtToken(user);
             var refreshToken = jwtTokenService.GenerateRefreshToken();
+            var exp = DateTimeOffset.UtcNow.AddMinutes(jwtOptions.AccessTokenValidityInMinutes).ToUnixTimeSeconds();
 
             await redisManager.SetRefreshTokenAsync(
                 user.Id,
@@ -142,8 +143,7 @@ public class AuthenticationService(
 
             return AuthenticationResult.Success(
                 accessToken,
-                refreshToken.Token,
-                jwtOptions.AccessTokenValidityInMinutes * 60);
+                refreshToken.Token, exp);
         }
         catch (Exception ex)
         {
@@ -154,7 +154,7 @@ public class AuthenticationService(
 
     public async Task<AuthenticationResult?> RefreshTokenAsync(string refreshToken,
         CancellationToken cancellationToken = default)
-    { 
+    {
         try
         {
             var claimsPrincipal = jwtTokenService.ValidateToken(refreshToken, out var validatedToken);
@@ -189,6 +189,7 @@ public class AuthenticationService(
 
             var newAccessToken = jwtTokenService.GenerateJwtToken(user);
             var newRefreshToken = jwtTokenService.GenerateRefreshToken();
+            var exp = DateTimeOffset.UtcNow.AddMinutes(jwtOptions.AccessTokenValidityInMinutes).ToUnixTimeSeconds();
 
             await redisManager.SetRefreshTokenAsync(
                 userId,
@@ -213,8 +214,7 @@ public class AuthenticationService(
 
             return AuthenticationResult.Success(
                 newAccessToken,
-                newRefreshToken.Token,
-                jwtOptions.AccessTokenValidityInMinutes * 60);
+                newRefreshToken.Token, exp);
         }
         catch (Exception ex)
         {
