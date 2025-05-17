@@ -54,6 +54,8 @@ public static class DependencyInjection
         services.TryAddSingleton<IPasswordService, PasswordService>();
         services.TryAddSingleton<IJwtTokenService, JwtTokenService>();
         services.TryAddSingleton<IRedisManager, RedisManager>();
+
+        services.TryAddSingleton<IExternalEventPublisher, RabbitMQEventPublisher>();
     }
 
     private static void AddScopedServices(this IServiceCollection services)

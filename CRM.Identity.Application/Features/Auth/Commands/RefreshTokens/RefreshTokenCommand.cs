@@ -2,7 +2,7 @@
 
 public sealed record RefreshTokenCommand(string RefreshToken) : IRequest<RefreshTokenResponse>;
 
-public sealed record RefreshTokenResponse(string AccessToken, string RefreshToken, int Exp);
+public sealed record RefreshTokenResponse(string AccessToken, string RefreshToken, long Exp);
 
 public sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
 {
@@ -31,6 +31,6 @@ public sealed class RefreshTokenCommandHandler(IAuthenticationService _authentic
         return Result.Success(new RefreshTokenResponse(
             result.AccessToken,
             result.RefreshToken,
-            result.ExpiresIn));
+            result.Exp));
     }
 }

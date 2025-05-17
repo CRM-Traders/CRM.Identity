@@ -22,9 +22,7 @@ public class OutboxRepository(ApplicationDbContext _dbContext) : Repository<Outb
     {
         return await _dbContext.OutboxMessages
             .Where(m => m.ProcessedAt == null && !m.IsClaimed)
-            .Where(m => ((m.Id.ToString().Length > 0) ?
-                        Convert.ToInt32(m.Id.ToString().Substring(m.Id.ToString().Length - 1, 1)) : 0)
-                        % partitionCount + 1 == partitionId)
+            .Where(m => Math.Abs(m.Id.GetHashCode()) % partitionCount + 1 == partitionId)
             .OrderByDescending(m => m.Priority)
             .ThenBy(m => m.CreatedAt)
             .Take(maxMessages)

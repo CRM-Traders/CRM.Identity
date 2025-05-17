@@ -4,16 +4,19 @@ public class OutboxService : IOutboxService
 {
     private readonly IOutboxRepository _outboxRepository;
     private readonly IEventPublisher _eventPublisher;
+    private readonly IExternalEventPublisher _rabbitMQPublisher;
     private readonly ILogger<OutboxService> _logger;
     private readonly string _instanceId;
 
     public OutboxService(
         IOutboxRepository outboxRepository,
         IEventPublisher eventPublisher,
+        IExternalEventPublisher rabbitMQPublisher,
         ILogger<OutboxService> logger)
     {
         _outboxRepository = outboxRepository;
         _eventPublisher = eventPublisher;
+        _rabbitMQPublisher = rabbitMQPublisher;
         _logger = logger;
         _instanceId = Guid.NewGuid().ToString("N");
     }
@@ -118,6 +121,9 @@ public class OutboxService : IOutboxService
         }
 
         await _eventPublisher.PublishAsync(domainEvent, cancellationToken);
+
+        await _rabbitMQPublisher.PublishEventAsync(message, cancellationToken);
+
         message.MarkAsProcessed();
     }
 }
