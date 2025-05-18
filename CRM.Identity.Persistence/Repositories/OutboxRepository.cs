@@ -7,7 +7,7 @@ public class OutboxRepository(ApplicationDbContext _dbContext) : Repository<Outb
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.OutboxMessages
-            .Where(m => m.ProcessedAt == null && !m.IsClaimed)
+            .Where(m => !m.IsClaimed)
             .OrderByDescending(m => m.Priority)
             .ThenBy(m => m.CreatedAt)
             .Take(maxMessages)
@@ -21,7 +21,7 @@ public class OutboxRepository(ApplicationDbContext _dbContext) : Repository<Outb
         CancellationToken cancellationToken = default)
     {
         var messageIds = await _dbContext.OutboxMessages
-            .Where(m => m.ProcessedAt == null && !m.IsClaimed)
+            .Where(m => !m.IsClaimed)
             .Select(m => m.Id)
             .ToListAsync(cancellationToken);
 
@@ -35,35 +35,29 @@ public class OutboxRepository(ApplicationDbContext _dbContext) : Repository<Outb
             .ThenBy(m => m.CreatedAt)
             .ToListAsync(cancellationToken);
     }
-
     public async Task<bool> TryClaimMessageAsync(
         Guid messageId,
         string instanceId,
         CancellationToken cancellationToken = default)
     {
-        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-
         try
         {
-            var message = await _dbContext.OutboxMessages
-                .FromSqlRaw("SELECT * FROM \"OutboxMessage\" WHERE \"Id\" = {0} FOR UPDATE", messageId)
-                .FirstOrDefaultAsync(cancellationToken);
+            var rowsAffected = await _dbContext.Database.ExecuteSqlRawAsync(
+                @"UPDATE ""OutboxMessage"" 
+               SET ""IsClaimed"" = true, 
+                   ""ClaimedBy"" = {0}, 
+                   ""ClaimedAt"" = {1} 
+               WHERE ""Id"" = {2} 
+                 AND ""IsClaimed"" = false 
+                 AND ""ProcessedAt"" IS NULL",
+                new object[] { instanceId, DateTimeOffset.UtcNow, messageId },
+                cancellationToken);
 
-            if (message != null && !message.IsClaimed)
-            {
-                message.ClaimForProcessing(instanceId);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
-                return true;
-            }
-
-            await transaction.RollbackAsync(cancellationToken);
-            return false;
+            return rowsAffected > 0;
         }
-        catch
+        catch (Exception ex)
         {
-            await transaction.RollbackAsync(cancellationToken);
-            throw;
+            return false;
         }
     }
 }

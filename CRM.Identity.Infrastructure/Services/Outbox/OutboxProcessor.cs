@@ -1,43 +1,82 @@
-﻿namespace CRM.Identity.Infrastructure.Services.Outbox;
-
-public class OutboxProcessor : IOutboxProcessor
+﻿public class OutboxProcessor : IOutboxProcessor
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IOutboxRepository _outboxRepository;
+    private readonly IEventPublisher _eventPublisher;
+    private readonly IExternalEventPublisher _externalEventPublisher;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OutboxProcessor> _logger;
-    private readonly IConnectionMultiplexer _redis;
-    private readonly string _instanceId;
 
     public OutboxProcessor(
-        IServiceProvider serviceProvider,
-        ILogger<OutboxProcessor> logger,
-        IConnectionMultiplexer redis)
+        IOutboxRepository outboxRepository,
+        IEventPublisher eventPublisher,
+        IExternalEventPublisher externalEventPublisher,
+        IUnitOfWork unitOfWork,
+        ILogger<OutboxProcessor> logger)
     {
-        _serviceProvider = serviceProvider;
+        _outboxRepository = outboxRepository;
+        _eventPublisher = eventPublisher;
+        _externalEventPublisher = externalEventPublisher;
+        _unitOfWork = unitOfWork;
         _logger = logger;
-        _redis = redis;
-        _instanceId = Guid.NewGuid().ToString("N");
     }
 
     public async Task ProcessPendingMessagesAsync(CancellationToken cancellationToken = default)
     {
-        var db = _redis.GetDatabase();
-        var partitionKey = $"outbox:instance:{_instanceId}:partition";
-        var partitionCount = 16; 
+        const int batchSize = 20;
 
-        var partitionId = (int)await db.StringGetAsync(partitionKey);
-        if (partitionId == 0)
+        var messages = await _outboxRepository.GetUnprocessedMessagesAsync(batchSize, cancellationToken);
+        _logger.LogInformation("Found {Count} messages to process", messages.Count);
+
+        foreach (var message in messages)
         {
-            partitionId = Random.Shared.Next(1, partitionCount + 1);
-            await db.StringSetAsync(partitionKey, partitionId, TimeSpan.FromHours(1));
+            try
+            {
+                var processed = await _unitOfWork.ExecuteInTransactionAsync(async () =>
+                {
+                    if (!await _outboxRepository.TryClaimMessageAsync(message.Id, "processor", cancellationToken))
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        var domainEventType = Type.GetType(message.Type);
+                        if (domainEventType == null)
+                        {
+                            message.MarkAsFailed($"Cannot find type {message.Type}");
+                            return false;
+                        }
+
+                        var domainEvent = JsonSerializer.Deserialize(message.Content, domainEventType) as IDomainEvent;
+                        if (domainEvent == null)
+                        {
+                            message.MarkAsFailed($"Cannot deserialize event {message.Type}");
+                            return false;
+                        }
+
+                        await _eventPublisher.PublishAsync(domainEvent, cancellationToken);
+                        await _externalEventPublisher.PublishEventAsync(message, cancellationToken);
+
+                        message.MarkAsProcessed();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing message {MessageId}", message.Id);
+                        message.MarkAsFailed(ex.Message);
+                        return false;
+                    }
+                }, cancellationToken);
+
+                if (processed)
+                {
+                    _logger.LogInformation("Successfully processed message {MessageId}", message.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Transaction error for message {MessageId}", message.Id);
+            }
         }
-
-        _logger.LogInformation("Processing outbox messages for partition {PartitionId}", partitionId);
-
-        using var scope = _serviceProvider.CreateScope();
-        var outboxService = scope.ServiceProvider.GetRequiredService<IOutboxService>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        await outboxService.ProcessOutboxMessagesForPartitionAsync(partitionId, partitionCount, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
