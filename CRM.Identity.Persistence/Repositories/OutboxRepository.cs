@@ -20,12 +20,19 @@ public class OutboxRepository(ApplicationDbContext _dbContext) : Repository<Outb
         int maxMessages,
         CancellationToken cancellationToken = default)
     {
-        return await _dbContext.OutboxMessages
+        var messageIds = await _dbContext.OutboxMessages
             .Where(m => m.ProcessedAt == null && !m.IsClaimed)
-            .Where(m => Math.Abs(m.Id.GetHashCode()) % partitionCount + 1 == partitionId)
+            .Select(m => m.Id)
+            .ToListAsync(cancellationToken);
+
+        var partitionedIds = messageIds
+            .Where(id => Math.Abs(id.GetHashCode()) % partitionCount + 1 == partitionId)
+            .Take(maxMessages);
+
+        return await _dbContext.OutboxMessages
+            .Where(m => partitionedIds.Contains(m.Id))
             .OrderByDescending(m => m.Priority)
             .ThenBy(m => m.CreatedAt)
-            .Take(maxMessages)
             .ToListAsync(cancellationToken);
     }
 

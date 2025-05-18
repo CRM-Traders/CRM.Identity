@@ -9,5 +9,5 @@ public class EventMessage
     public string AggregateType { get; set; } = string.Empty;
     public DateTimeOffset OccurredOn { get; set; }
     public string Content { get; set; } = string.Empty;
-    public Dictionary<string, string>? Metadata { get; set; }
+    public string? Metadata { get; set; }
 }

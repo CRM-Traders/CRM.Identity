@@ -63,10 +63,7 @@ public class RabbitMQEventPublisher : IExternalEventPublisher, IDisposable
                 AggregateType = outboxMessage.AggregateType,
                 OccurredOn = outboxMessage.CreatedAt,
                 Content = outboxMessage.Content,
-                Metadata = new Dictionary<string, string>
-                {
-                    { "ProcessedAt", DateTimeOffset.UtcNow.ToString("o") }
-                }
+                Metadata = $"ProcessedAt {DateTimeOffset.UtcNow.ToString("o")}"
             };
 
             var messageJson = JsonSerializer.Serialize(eventMessage);
