@@ -1,6 +1,8 @@
 ﻿using CRM.Identity.Application.Common.Constants;
+using CRM.Identity.Application.Common.Services.Grids;
 using CRM.Identity.Domain.Entities.Permissions.Enums;
 using CRM.Identity.Infrastructure.Authorization;
+using CRM.Identity.Infrastructure.Services.Grids;
 
 namespace CRM.Identity.Infrastructure.DI;
 
@@ -69,6 +71,8 @@ public static class DependencyInjection
 
         services.AddScoped<IPermissionSynchronizer, PermissionSynchronizer>();
         services.AddScoped<IPermissionService, PermissionService>();
+
+        services.AddScoped<IGridService, GridService>();
     }
 
     private static void AddRedisConnection(this IServiceCollection services)

@@ -63,4 +63,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity
     {
         return SpecificationEvaluator<TEntity>.GetQuery(_dbSet.AsQueryable(), specification);
     }
+
+    public IQueryable<TEntity> GetQueryable()
+    {
+        return _dbSet.AsQueryable();
+    }
 }

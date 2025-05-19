@@ -12,7 +12,6 @@ global using CRM.Identity.Domain.Common.Events;
 global using CRM.Identity.Domain.Entities.OutboxMessages;
 global using CRM.Identity.Domain.Entities.Permissions;
 global using CRM.Identity.Domain.Entities.Users;
-global using CRM.Identity.Domain.Entities.Users.Enums;
 global using CRM.Identity.Persistence.Databases;
 global using CRM.Identity.Persistence.Databases.Configurations.Base;
 global using CRM.Identity.Persistence.Repositories;

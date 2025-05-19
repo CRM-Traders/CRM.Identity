@@ -11,4 +11,5 @@ public interface IRepository<TEntity> where TEntity : Entity
     Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task<int> CountAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
     Task<bool> AnyAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
+    IQueryable<TEntity> GetQueryable();
 }
