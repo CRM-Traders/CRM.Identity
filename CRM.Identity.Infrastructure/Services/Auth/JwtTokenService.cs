@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace CRM.Identity.Infrastructure.Services.Auth;
+﻿namespace CRM.Identity.Infrastructure.Services.Auth;
 
 public class JwtTokenService(JwtOptions jwtOptions, IServiceProvider serviceProvider) : IJwtTokenService
 {
@@ -28,6 +26,7 @@ public class JwtTokenService(JwtOptions jwtOptions, IServiceProvider serviceProv
         tokenClaims.AddRange(new List<Claim>
         {
             new("Uid", user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new("Email", user.Email),
             new("FullName", $"{user.FirstName} {user.LastName}"),
             new Claim(ClaimTypes.Role, user.Role.ToString().ToLower()),

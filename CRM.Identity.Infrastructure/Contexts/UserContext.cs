@@ -12,10 +12,11 @@ public class UserContext(IHttpContextAccessor httpContextAccessor) : IUserContex
     public bool IsAuthenticated => httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 
     private Guid GetUserId()
-    { 
+    {
         var userIdClaim = httpContextAccessor.HttpContext?.User.Claims
             .FirstOrDefault(c =>
-                c.Type == "Uid" || c.Type == "sub" ||
+                string.Equals(c.Type, "Uid", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(c.Type, "sub", StringComparison.OrdinalIgnoreCase) ||
                 c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
 
         if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))

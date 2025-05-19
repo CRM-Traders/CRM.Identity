@@ -76,7 +76,9 @@ public class AuthenticationService(
 
             return AuthenticationResult.Success(
                 accessToken,
-                refreshToken.Token, exp);
+                refreshToken.Token,
+                user.Role.ToString(), 
+                exp);
         }
         catch (Exception ex)
         {
@@ -143,7 +145,9 @@ public class AuthenticationService(
 
             return AuthenticationResult.Success(
                 accessToken,
-                refreshToken.Token, exp);
+                refreshToken.Token,
+                user.Role.ToString(),
+                exp);
         }
         catch (Exception ex)
         {
@@ -152,12 +156,12 @@ public class AuthenticationService(
         }
     }
 
-    public async Task<AuthenticationResult?> RefreshTokenAsync(string refreshToken,
+    public async Task<AuthenticationResult?> RefreshTokenAsync(string accessToken, string refreshToken,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var claimsPrincipal = jwtTokenService.ValidateToken(refreshToken, out var validatedToken);
+            var claimsPrincipal = jwtTokenService.ValidateToken(accessToken, out var validatedToken);
 
             if (claimsPrincipal == null || validatedToken == null)
             {
@@ -214,7 +218,9 @@ public class AuthenticationService(
 
             return AuthenticationResult.Success(
                 newAccessToken,
-                newRefreshToken.Token, exp);
+                newRefreshToken.Token, 
+                user.Role.ToString(),
+                exp);
         }
         catch (Exception ex)
         {

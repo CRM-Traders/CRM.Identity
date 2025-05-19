@@ -14,8 +14,7 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IResult> GrantPermission(
-        [FromBody] GrantPermissionCommand command,
-        CancellationToken cancellationToken)
+        [FromBody] GrantPermissionCommand command, CancellationToken cancellationToken)
     {
         return await SendAsync(command, cancellationToken);
     }
@@ -27,8 +26,7 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IResult> RevokePermission(
-        [FromBody] RevokePermissionCommand command,
-        CancellationToken cancellationToken)
+        [FromBody] RevokePermissionCommand command, CancellationToken cancellationToken)
     {
         return await SendAsync(command, cancellationToken);
     }
@@ -38,8 +36,7 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
     [ProducesResponseType(typeof(IEnumerable<PermissionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IResult> GetUserPermissions(
-        Guid userId,
-        CancellationToken cancellationToken)
+        Guid userId, CancellationToken cancellationToken)
     {
         var query = new GetUserPermissionsQuery(userId);
         return await SendAsync(query, cancellationToken);

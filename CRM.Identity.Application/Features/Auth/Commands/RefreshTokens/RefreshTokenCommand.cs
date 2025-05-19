@@ -1,6 +1,6 @@
 ﻿namespace CRM.Identity.Application.Features.Auth.Commands.RefreshTokens;
 
-public sealed record RefreshTokenCommand(string RefreshToken) : IRequest<RefreshTokenResponse>;
+public sealed record RefreshTokenCommand(string AccessToken, string RefreshToken) : IRequest<AuthenticationResult>;
 
 public sealed record RefreshTokenResponse(string AccessToken, string RefreshToken, long Exp);
 
@@ -15,22 +15,19 @@ public sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshToke
 }
 
 public sealed class RefreshTokenCommandHandler(IAuthenticationService _authenticationService)
-    : IRequestHandler<RefreshTokenCommand, RefreshTokenResponse>
+    : IRequestHandler<RefreshTokenCommand, AuthenticationResult>
 {
-    public async ValueTask<Result<RefreshTokenResponse>> Handle(
+    public async ValueTask<Result<AuthenticationResult>> Handle(
         RefreshTokenCommand request,
         CancellationToken cancellationToken)
     {
-        var result = await _authenticationService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
+        var result = await _authenticationService.RefreshTokenAsync(request.AccessToken, request.RefreshToken, cancellationToken);
 
         if (result == null)
         {
-            return Result.Failure<RefreshTokenResponse>("Invalid or expired refresh token", "Unauthorized");
+            return Result.Failure<AuthenticationResult>("Invalid or expired refresh token", "Unauthorized");
         }
 
-        return Result.Success(new RefreshTokenResponse(
-            result.AccessToken,
-            result.RefreshToken,
-            result.Exp));
+        return Result.Success(result);
     }
 }

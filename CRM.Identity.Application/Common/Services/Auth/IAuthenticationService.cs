@@ -15,6 +15,7 @@ public interface IAuthenticationService
         CancellationToken cancellationToken = default);
 
     Task<AuthenticationResult?> RefreshTokenAsync(
+        string accessToken,
         string refreshToken,
         CancellationToken cancellationToken = default);
 
