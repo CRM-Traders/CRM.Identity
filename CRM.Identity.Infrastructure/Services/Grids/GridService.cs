@@ -71,7 +71,7 @@ public class GridService : IGridService
         {
             query = filter.Operator switch
             {
-                "equals" => ApplyEquals(query, filter),
+                "eq" => ApplyEquals(query, filter),
                 "notEquals" => ApplyNotEquals(query, filter),
                 "contains" => ApplyContains(query, filter),
                 "startsWith" => ApplyStartsWith(query, filter),
@@ -160,7 +160,7 @@ public class GridService : IGridService
                         continue;
                     }
 
-                    if (propertyType != underlyingType) 
+                    if (propertyType != underlyingType)
                     {
                         var hasValueProperty = Expression.Property(property, "HasValue");
                         var valueProperty = Expression.Property(property, "Value");
@@ -246,11 +246,28 @@ public class GridService : IGridService
 
     #region Filter Helpers
 
+    public static object GetValue(string input)
+    {
+        if (int.TryParse(input, out var intResult))
+            return intResult;
+
+        if (double.TryParse(input, out var doubleResult))
+            return doubleResult;
+
+        if (bool.TryParse(input, out var boolResult))
+            return boolResult;
+
+        if (DateTimeOffset.TryParse(input, out var dateResult))
+            return dateResult;
+
+        return input;
+    }
+
     private IQueryable<T> ApplyEquals<T>(IQueryable<T> query, GridFilterItem filter) where T : class
     {
         var parameter = Expression.Parameter(typeof(T), "x");
         var property = Expression.Property(parameter, filter.Field);
-        var constant = Expression.Constant(filter.Value);
+        var constant = Expression.Constant(GetValue(filter.Value!.ToString()!));
         var equals = Expression.Equal(property, constant);
         var lambda = Expression.Lambda<Func<T, bool>>(equals, parameter);
         return query.Where(lambda);
@@ -260,9 +277,9 @@ public class GridService : IGridService
     {
         var parameter = Expression.Parameter(typeof(T), "x");
         var property = Expression.Property(parameter, filter.Field);
-        var constant = Expression.Constant(filter.Value);
-        var notEquals = Expression.NotEqual(property, constant);
-        var lambda = Expression.Lambda<Func<T, bool>>(notEquals, parameter);
+        var constant = Expression.Constant(GetValue(filter.Value!.ToString()!));
+        var equals = Expression.NotEqual(property, constant);
+        var lambda = Expression.Lambda<Func<T, bool>>(equals, parameter);
         return query.Where(lambda);
     }
 
