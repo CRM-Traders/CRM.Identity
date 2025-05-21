@@ -19,12 +19,7 @@ public class GridService : IGridService
         {
             var searchableProperties = typeof(TEntity)
                 .GetProperties()
-                .Where(p => p.CanRead &&
-                    (p.PropertyType == typeof(string) ||
-                     p.PropertyType == typeof(int) ||
-                     p.PropertyType == typeof(decimal) ||
-                     p.PropertyType == typeof(DateTime) ||
-                     p.PropertyType == typeof(bool)))
+                .Where(p => p.CanRead)
                 .Select(p => p.Name)
                 .ToArray();
 
@@ -35,7 +30,7 @@ public class GridService : IGridService
 
             if (!string.IsNullOrEmpty(gridQuery.GlobalFilter))
             {
-                query = ApplyGlobalFilter(query, gridQuery.GlobalFilter, searchableProperties);
+                query = ApplyGlobalFilter(query, gridQuery.GlobalFilter, searchableProperties, gridQuery.VisibleColumns);
             }
 
             int totalCount = await query.CountAsync(cancellationToken);
@@ -99,28 +94,110 @@ public class GridService : IGridService
     public IQueryable<T> ApplyGlobalFilter<T>(
         IQueryable<T> query,
         string globalFilter,
-        string[] searchableProperties) where T : class
+        string[] searchableProperties,
+        string[]? visibleColumns = null) where T : class
     {
+        var propertiesToSearch = visibleColumns != null && visibleColumns.Length > 0
+            ? searchableProperties.Intersect(visibleColumns, StringComparer.OrdinalIgnoreCase).ToArray()
+            : searchableProperties;
+
         var parameter = Expression.Parameter(typeof(T), "x");
         Expression? combinedExpression = null;
 
-        foreach (var propertyName in searchableProperties)
+        foreach (var propertyName in propertiesToSearch)
         {
+            var propertyInfo = typeof(T).GetProperty(propertyName);
+            if (propertyInfo == null) continue;
+
             var property = Expression.Property(parameter, propertyName);
-            var propertyType = typeof(T).GetProperty(propertyName)?.PropertyType;
+            var propertyType = propertyInfo.PropertyType;
 
-            if (propertyType == typeof(string))
+            var underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+
+            Expression? propertyExpression = null;
+
+            if (underlyingType == typeof(string))
             {
-                var toString = Expression.Call(property,
-                    typeof(object).GetMethod("ToString") ?? throw new InvalidOperationException("ToString method not found"));
-                var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) })
-                    ?? throw new InvalidOperationException("Contains method not found");
-                var constant = Expression.Constant(globalFilter);
-                var call = Expression.Call(toString, containsMethod, constant);
+                var propertyNotNull = Expression.NotEqual(property, Expression.Constant(null, propertyType));
+                var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                var constant = Expression.Constant(globalFilter, typeof(string));
+                var stringContains = Expression.Call(property, containsMethod!, constant);
 
+                propertyExpression = Expression.AndAlso(propertyNotNull, stringContains);
+            }
+            else if (underlyingType == typeof(bool))
+            {
+                if (bool.TryParse(globalFilter, out var boolValue))
+                {
+                    var constant = Expression.Constant(boolValue, typeof(bool));
+                    if (propertyType != typeof(bool))
+                    {
+                        var hasValueProperty = Expression.Property(property, "HasValue");
+                        var valueProperty = Expression.Property(property, "Value");
+                        var hasValue = Expression.IsTrue(hasValueProperty);
+                        var valueEquals = Expression.Equal(valueProperty, constant);
+                        propertyExpression = Expression.AndAlso(hasValue, valueEquals);
+                    }
+                    else
+                    {
+                        propertyExpression = Expression.Equal(property, constant);
+                    }
+                }
+            }
+            else if (underlyingType == typeof(int) || underlyingType == typeof(long) ||
+                     underlyingType == typeof(decimal) || underlyingType == typeof(double) ||
+                     underlyingType == typeof(float))
+            {
+                if (decimal.TryParse(globalFilter, out var numericValue))
+                {
+                    object convertedValue;
+                    try
+                    {
+                        convertedValue = Convert.ChangeType(numericValue, underlyingType);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    if (propertyType != underlyingType) 
+                    {
+                        var hasValueProperty = Expression.Property(property, "HasValue");
+                        var valueProperty = Expression.Property(property, "Value");
+                        var hasValue = Expression.IsTrue(hasValueProperty);
+                        var valueEquals = Expression.Equal(valueProperty, Expression.Constant(convertedValue, underlyingType));
+                        propertyExpression = Expression.AndAlso(hasValue, valueEquals);
+                    }
+                    else
+                    {
+                        propertyExpression = Expression.Equal(property, Expression.Constant(convertedValue, underlyingType));
+                    }
+                }
+            }
+            else if (underlyingType == typeof(DateTime))
+            {
+                if (DateTime.TryParse(globalFilter, out var dateValue))
+                {
+                    if (propertyType != typeof(DateTime))
+                    {
+                        var hasValueProperty = Expression.Property(property, "HasValue");
+                        var valueProperty = Expression.Property(property, "Value");
+                        var hasValue = Expression.IsTrue(hasValueProperty);
+                        var valueEquals = Expression.Equal(valueProperty, Expression.Constant(dateValue, typeof(DateTime)));
+                        propertyExpression = Expression.AndAlso(hasValue, valueEquals);
+                    }
+                    else
+                    {
+                        propertyExpression = Expression.Equal(property, Expression.Constant(dateValue, typeof(DateTime)));
+                    }
+                }
+            }
+
+            if (propertyExpression != null)
+            {
                 combinedExpression = combinedExpression == null
-                    ? call
-                    : Expression.OrElse(combinedExpression, call);
+                    ? propertyExpression
+                    : Expression.OrElse(combinedExpression, propertyExpression);
             }
         }
 
@@ -193,11 +270,26 @@ public class GridService : IGridService
     {
         var parameter = Expression.Parameter(typeof(T), "x");
         var property = Expression.Property(parameter, filter.Field);
-        var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-        var constant = Expression.Constant(filter.Value?.ToString());
-        var call = Expression.Call(property, containsMethod!, constant);
-        var lambda = Expression.Lambda<Func<T, bool>>(call, parameter);
-        return query.Where(lambda);
+        var propertyType = typeof(T).GetProperty(filter.Field)?.PropertyType;
+
+        if (propertyType == typeof(string))
+        {
+            var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+            var constant = Expression.Constant(filter.Value?.ToString());
+            var call = Expression.Call(property, containsMethod!, constant);
+            var lambda = Expression.Lambda<Func<T, bool>>(call, parameter);
+            return query.Where(lambda);
+        }
+        else
+        {
+            var toString = Expression.Call(property,
+                typeof(object).GetMethod("ToString") ?? throw new InvalidOperationException("ToString method not found"));
+            var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+            var constant = Expression.Constant(filter.Value?.ToString());
+            var call = Expression.Call(toString, containsMethod!, constant);
+            var lambda = Expression.Lambda<Func<T, bool>>(call, parameter);
+            return query.Where(lambda);
+        }
     }
 
     private IQueryable<T> ApplyStartsWith<T>(IQueryable<T> query, GridFilterItem filter) where T : class
@@ -309,6 +401,69 @@ public class GridService : IGridService
         var isNotNull = Expression.NotEqual(property, Expression.Constant(null));
         var lambda = Expression.Lambda<Func<T, bool>>(isNotNull, parameter);
         return query.Where(lambda);
+    }
+
+    private Expression BuildStringFilterExpression(Expression property, string filterValue)
+    {
+        var toString = Expression.Call(property,
+            typeof(object).GetMethod("ToString") ?? throw new InvalidOperationException("ToString method not found"));
+        var containsMethod = typeof(string).GetMethod("Contains",
+            new[] { typeof(string) }) ?? throw new InvalidOperationException("Contains method not found");
+        var constant = Expression.Constant(filterValue, typeof(string));
+
+        return Expression.Call(toString, containsMethod, constant);
+    }
+
+    private Expression BuildNumericFilterExpression(Expression property, string filterValue, Type propertyType)
+    {
+        if (decimal.TryParse(filterValue, out var numericValue))
+        {
+            var convertedValue = Convert.ChangeType(numericValue, propertyType);
+            var constant = Expression.Constant(convertedValue, propertyType);
+            return Expression.Equal(property, constant);
+        }
+
+        var toString = Expression.Call(property,
+            typeof(object).GetMethod("ToString") ?? throw new InvalidOperationException("ToString method not found"));
+        var containsMethod = typeof(string).GetMethod("Contains",
+            new[] { typeof(string) }) ?? throw new InvalidOperationException("Contains method not found");
+        var stringConstant = Expression.Constant(filterValue, typeof(string));
+
+        return Expression.Call(toString, containsMethod, stringConstant);
+    }
+
+    private Expression BuildDateFilterExpression(Expression property, string filterValue)
+    {
+        if (DateTime.TryParse(filterValue, out var dateValue))
+        {
+            var constant = Expression.Constant(dateValue, typeof(DateTime));
+            return Expression.Equal(property, constant);
+        }
+
+        var toString = Expression.Call(property,
+            typeof(object).GetMethod("ToString") ?? throw new InvalidOperationException("ToString method not found"));
+        var containsMethod = typeof(string).GetMethod("Contains",
+            new[] { typeof(string) }) ?? throw new InvalidOperationException("Contains method not found");
+        var stringConstant = Expression.Constant(filterValue, typeof(string));
+
+        return Expression.Call(toString, containsMethod, stringConstant);
+    }
+
+    private Expression BuildBooleanFilterExpression(Expression property, string filterValue)
+    {
+        if (bool.TryParse(filterValue, out var boolValue))
+        {
+            var constant = Expression.Constant(boolValue, typeof(bool));
+            return Expression.Equal(property, constant);
+        }
+
+        var toString = Expression.Call(property,
+            typeof(object).GetMethod("ToString") ?? throw new InvalidOperationException("ToString method not found"));
+        var equalsMethod = typeof(string).GetMethod("Equals",
+            new[] { typeof(string) }) ?? throw new InvalidOperationException("Equals method not found");
+        var stringConstant = Expression.Constant(filterValue.ToLower(), typeof(string));
+
+        return Expression.Call(toString, equalsMethod, stringConstant);
     }
 
     #endregion

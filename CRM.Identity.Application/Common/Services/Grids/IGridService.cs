@@ -19,7 +19,8 @@ public interface IGridService
     IQueryable<T> ApplyGlobalFilter<T>(
         IQueryable<T> query,
         string globalFilter,
-        string[] searchableProperties) where T : class;
+        string[] searchableProperties,
+        string[]? visibleColumns) where T : class;
 
     IQueryable<T> ApplySorting<T>(
         IQueryable<T> query,
