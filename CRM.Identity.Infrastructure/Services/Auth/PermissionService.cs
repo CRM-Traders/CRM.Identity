@@ -1,7 +1,5 @@
 using CRM.Identity.Application.Common.Specifications.Roles;
 using CRM.Identity.Domain.Entities.Permissions.Enums;
-using System.Collections;
-using System.Text;
 
 namespace CRM.Identity.Infrastructure.Services.Auth;
 

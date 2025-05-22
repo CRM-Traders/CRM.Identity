@@ -1,4 +1,6 @@
-﻿using CRM.Identity.Application.Features.Users.Queries.UserSettings;
+﻿using CRM.Identity.Application.Features.Users.Commands.ChangePassword;
+using CRM.Identity.Application.Features.Users.Commands.RegisterUser;
+using CRM.Identity.Application.Features.Users.Queries.UserSettings;
 
 namespace CRM.Identity.Api.Controllers;
 
@@ -9,7 +11,7 @@ public class UsersController(IMediator _send) : BaseController(_send)
     [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IResult> Register([FromBody] RegisterCommand command, CancellationToken cancellationToken)
+    public async Task<IResult> Register([FromBody] RegisterUserCommand command, CancellationToken cancellationToken)
     {
         return await SendAsync(command, cancellationToken);
     }
@@ -22,5 +24,13 @@ public class UsersController(IMediator _send) : BaseController(_send)
     public async Task<IResult> Settings(CancellationToken cancellationToken)
     {
         return await SendAsync(new UserSettingsQuery(), cancellationToken);
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
+    public async Task<IResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellation) 
+    {
+        return await SendAsync(request, cancellation);
     }
 }
