@@ -15,52 +15,45 @@ public class GridService : IGridService
         where TEntity : class
         where TResult : class
     {
-        try
+        var searchableProperties = typeof(TEntity)
+            .GetProperties()
+            .Where(p => p.CanRead)
+            .Select(p => p.Name)
+            .ToArray();
+
+        if (gridQuery.Filters?.Count > 0)
         {
-            var searchableProperties = typeof(TEntity)
-                .GetProperties()
-                .Where(p => p.CanRead)
-                .Select(p => p.Name)
-                .ToArray();
-
-            if (gridQuery.Filters?.Count > 0)
-            {
-                query = ApplyFilters(query, gridQuery.Filters);
-            }
-
-            if (!string.IsNullOrEmpty(gridQuery.GlobalFilter))
-            {
-                query = ApplyGlobalFilter(query, gridQuery.GlobalFilter, searchableProperties, gridQuery.VisibleColumns);
-            }
-
-            int totalCount = await query.CountAsync(cancellationToken);
-
-            if (!string.IsNullOrEmpty(gridQuery.SortField))
-            {
-                query = ApplySorting(query, gridQuery.SortField, gridQuery.SortDirection ?? "asc");
-            }
-
-            query = ApplyPagination(query, gridQuery.PageIndex, gridQuery.PageSize);
-
-            var items = await query
-                .Select(entity => selector(entity))
-                .ToListAsync(cancellationToken);
-
-            int totalPages = (int)Math.Ceiling(totalCount / (double)gridQuery.PageSize);
-
-            return new GridResponse<TResult>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                PageIndex = gridQuery.PageIndex,
-                PageSize = gridQuery.PageSize,
-                TotalPages = totalPages
-            };
+            query = ApplyFilters(query, gridQuery.Filters);
         }
-        catch (Exception ex)
+
+        if (!string.IsNullOrEmpty(gridQuery.GlobalFilter))
         {
-            throw;
+            query = ApplyGlobalFilter(query, gridQuery.GlobalFilter, searchableProperties, gridQuery.VisibleColumns);
         }
+
+        int totalCount = await query.CountAsync(cancellationToken);
+
+        if (!string.IsNullOrEmpty(gridQuery.SortField))
+        {
+            query = ApplySorting(query, gridQuery.SortField, gridQuery.SortDirection ?? "asc");
+        }
+
+        query = ApplyPagination(query, gridQuery.PageIndex, gridQuery.PageSize);
+
+        var items = await query
+            .Select(entity => selector(entity))
+            .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(totalCount / (double)gridQuery.PageSize);
+
+        return new GridResponse<TResult>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageIndex = gridQuery.PageIndex,
+            PageSize = gridQuery.PageSize,
+            TotalPages = totalPages
+        };
     }
 
     public IQueryable<T> ApplyFilters<T>(

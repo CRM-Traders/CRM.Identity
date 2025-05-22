@@ -4,6 +4,7 @@ public sealed record RegisterCommand(
     string FirstName,
     string LastName,
     string Email,
+    string Username,
     string Password,
     string? PhoneNumber) : IRequest<Unit>;
 
@@ -26,6 +27,13 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
             .EmailAddress()
             .WithMessage("A valid email address is required.");
 
+        RuleFor(x => x.Username)
+            .NotEmpty()
+            .Length(3, 30)
+            .Matches("^[a-zA-Z0-9_-]+$")
+            .WithMessage(
+                "Username must be 3-30 characters long and contain only letters, numbers, hyphens, and underscores.");
+
         RuleFor(x => x.Password)
             .Password();
 
@@ -44,12 +52,23 @@ public sealed class RegisterCommandHandler(
 {
     public async ValueTask<Result<Unit>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        var userSpecification = new UserByEmailSpecification(request.Email.Trim().ToLower());
-        var existingUser = await _userRepository.FirstOrDefaultAsync(userSpecification, cancellationToken);
+        // Check if email already exists
+        var userEmailSpecification = new UserByEmailSpecification(request.Email.Trim().ToLower());
+        var existingUserByEmail = await _userRepository.FirstOrDefaultAsync(userEmailSpecification, cancellationToken);
 
-        if (existingUser != null)
+        if (existingUserByEmail != null)
         {
             return Result.Failure<Unit>("User with this email already exists", "Conflict");
+        }
+
+        // Check if username already exists
+        var userUsernameSpecification = new UserByUsernameSpecification(request.Username.Trim().ToLower());
+        var existingUserByUsername =
+            await _userRepository.FirstOrDefaultAsync(userUsernameSpecification, cancellationToken);
+
+        if (existingUserByUsername != null)
+        {
+            return Result.Failure<Unit>("User with this username already exists", "Conflict");
         }
 
         var passwordHash = _passwordService.HashPasword(request.Password, out var salt);
@@ -59,6 +78,7 @@ public sealed class RegisterCommandHandler(
             request.FirstName,
             request.LastName,
             request.Email.Trim().ToLower(),
+            request.Username.Trim().ToLower(),
             request.PhoneNumber,
             passwordHash,
             saltBase64);

@@ -15,7 +15,7 @@ public class AuthenticationService(
     {
         try
         {
-            var userSpecification = new UserByEmailSpecification(email.Trim().ToLower());
+            var userSpecification = new UserEmailOrUsernameSpec(email.Trim().ToLower());
             var user = await userRepository.FirstOrDefaultAsync(userSpecification, cancellationToken);
 
             if (user == null)
@@ -77,7 +77,7 @@ public class AuthenticationService(
             return AuthenticationResult.Success(
                 accessToken,
                 refreshToken.Token,
-                user.Role.ToString(), 
+                user.Role.ToString(),
                 exp);
         }
         catch (Exception ex)
@@ -218,7 +218,7 @@ public class AuthenticationService(
 
             return AuthenticationResult.Success(
                 newAccessToken,
-                newRefreshToken.Token, 
+                newRefreshToken.Token,
                 user.Role.ToString(),
                 exp);
         }

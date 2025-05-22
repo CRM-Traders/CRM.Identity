@@ -14,12 +14,13 @@ public class PermissionService(
     ILogger<PermissionService> logger)
     : IPermissionService
 {
-    private Dictionary<string, int> _permissionIndexMap;
-    private List<Permission> _allPermissions;
+    private Dictionary<string, int>? _permissionIndexMap;
+    private List<Permission>? _allPermissions;
 
     public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId,
         CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("Getting user permissions for {UserId}", userId);
         var user = await userRepository.GetByIdAsync(userId, cancellationToken);
         if (user == null)
         {
@@ -181,7 +182,7 @@ public class PermissionService(
                     }
                 }
 
-                if (!_permissionIndexMap.TryGetValue(permissionKey, out index))
+                if (!_permissionIndexMap!.TryGetValue(permissionKey, out index))
                     return false;
             }
 

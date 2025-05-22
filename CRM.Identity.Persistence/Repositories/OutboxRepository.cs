@@ -55,7 +55,7 @@ public class OutboxRepository(ApplicationDbContext _dbContext) : Repository<Outb
 
             return rowsAffected > 0;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }

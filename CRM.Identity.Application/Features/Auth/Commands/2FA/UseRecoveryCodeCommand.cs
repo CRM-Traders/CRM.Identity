@@ -30,9 +30,7 @@ public sealed class UseRecoveryCodeCommandValidator : AbstractValidator<UseRecov
 }
 
 public sealed class UseRecoveryCodeCommandHandler(
-    IAuthenticationService authenticationService,
-    IRepository<User> userRepository,
-    IUnitOfWork unitOfWork,
+    IAuthenticationService authenticationService, 
     ILogger<UseRecoveryCodeCommandHandler> logger) : IRequestHandler<UseRecoveryCodeCommand, AuthenticationResult>
 {
     public async ValueTask<Result<AuthenticationResult>> Handle(

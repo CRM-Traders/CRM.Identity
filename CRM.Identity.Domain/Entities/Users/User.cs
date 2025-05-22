@@ -5,6 +5,7 @@ public class User : AggregateRoot
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
+    public string Username { get; private set; } = string.Empty;
     public string? PhoneNumber { get; private set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
     public string PasswordSalt { get; private set; } = string.Empty;
@@ -17,11 +18,12 @@ public class User : AggregateRoot
     public List<string> RecoveryCodes { get; private set; } = new();
     
     
-    public User(string firstName, string lastName, string email, string? phoneNumber, string passwordHash, string passwordSalt)
+    public User(string firstName, string lastName, string email, string username, string? phoneNumber, string passwordHash, string passwordSalt)
     {
         FirstName = firstName;
         LastName = lastName;
         Email = email;
+        Username = username;
         PhoneNumber = phoneNumber;
         PasswordHash = passwordHash;
         PasswordSalt = passwordSalt;
@@ -32,6 +34,7 @@ public class User : AggregateRoot
             firstName,
             lastName,
             email,
+            username,
             phoneNumber,
             passwordHash,
             passwordSalt));

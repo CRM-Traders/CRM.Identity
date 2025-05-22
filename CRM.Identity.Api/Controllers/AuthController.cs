@@ -1,6 +1,7 @@
 ﻿using CRM.Identity.Application.Common.Models.Auth;
 using CRM.Identity.Application.Features.Auth.Commands._2FA;
 using CRM.Identity.Application.Features.Auth.Queries.IsAuthorized;
+using CRM.Identity.Infrastructure.Attributes;
 
 namespace CRM.Identity.Api.Controllers;
 
@@ -19,7 +20,8 @@ public class AuthController(IMediator _sender) : BaseController(_sender)
     [ProducesResponseType(typeof(AuthenticationResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IResult> LoginWithRecoveryCode([FromBody] UseRecoveryCodeCommand command, CancellationToken cancellationToken)
+    public async Task<IResult> LoginWithRecoveryCode([FromBody] UseRecoveryCodeCommand command,
+        CancellationToken cancellationToken)
     {
         return await SendAsync(command, cancellationToken);
     }
@@ -50,7 +52,7 @@ public class AuthController(IMediator _sender) : BaseController(_sender)
     {
         return await SendAsync(new InvalidateAllSessionsCommand(), cancellationToken);
     }
- 
+
     [HttpPost("2fa/setup")]
     [Authorize]
     [ProducesResponseType(typeof(SetupTwoFactorResponse), StatusCodes.Status200OK)]
@@ -65,7 +67,8 @@ public class AuthController(IMediator _sender) : BaseController(_sender)
     [ProducesResponseType(typeof(VerifyTwoFactorResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IResult> VerifyTwoFactor([FromBody] VerifyTwoFactorCommand command, CancellationToken cancellationToken)
+    public async Task<IResult> VerifyTwoFactor([FromBody] VerifyTwoFactorCommand command,
+        CancellationToken cancellationToken)
     {
         return await SendAsync(command, cancellationToken);
     }
@@ -75,7 +78,8 @@ public class AuthController(IMediator _sender) : BaseController(_sender)
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IResult> DisableTwoFactor([FromBody] DisableTwoFactorCommand command, CancellationToken cancellationToken)
+    public async Task<IResult> DisableTwoFactor([FromBody] DisableTwoFactorCommand command,
+        CancellationToken cancellationToken)
     {
         return await SendAsync(command, cancellationToken);
     }
@@ -85,7 +89,7 @@ public class AuthController(IMediator _sender) : BaseController(_sender)
     [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IResult> IsAuthorized(CancellationToken cancellationToken) 
+    public async Task<IResult> IsAuthorized(CancellationToken cancellationToken)
     {
         return await SendAsync(new IsAuthorizedQuery(), cancellationToken);
     }

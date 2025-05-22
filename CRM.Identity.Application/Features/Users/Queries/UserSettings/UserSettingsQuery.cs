@@ -6,13 +6,14 @@ public sealed record UserSettingsQueryResponse(
     string FirstName,
     string LastName,
     string Email,
+    string Username,
     string? PhoneNumber,
     bool IsEmailConfirmed,
     string Role,
-    bool IsTwoFactorenabled,
-    bool IsTwoFactorverified);
+    bool IsTwoFactorEnabled);
 
-public sealed class UserSettingsQueryHandler(IRepository<User> userRepository, IUserContext _userContext) : IRequestHandler<UserSettingsQuery, UserSettingsQueryResponse>
+public sealed class UserSettingsQueryHandler(IRepository<User> userRepository, IUserContext _userContext)
+    : IRequestHandler<UserSettingsQuery, UserSettingsQueryResponse>
 {
     public async ValueTask<Result<UserSettingsQueryResponse>> Handle(
         UserSettingsQuery request,
@@ -27,11 +28,11 @@ public sealed class UserSettingsQueryHandler(IRepository<User> userRepository, I
             user.FirstName,
             user.LastName,
             user.Email,
+            user.Username,
             user.PhoneNumber,
             user.IsEmailConfirmed,
             user.Role.ToString(),
-            user.IsTwoFactorEnabled,
-            user.IsTwoFactorVerified);
+            user.IsTwoFactorEnabled);
 
         return Result.Success(response);
     }

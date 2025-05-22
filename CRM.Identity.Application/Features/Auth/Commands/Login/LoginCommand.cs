@@ -1,7 +1,7 @@
 ﻿namespace CRM.Identity.Application.Features.Auth.Commands.Login;
 
 public sealed record LoginCommand(
-    string Email,
+    string EmailOrUsername,
     string Password,
     string? TwoFactorCode = null,
     bool? RememberMe = null) : IRequest<AuthenticationResult>;
@@ -10,10 +10,9 @@ public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
 {
     public LoginCommandValidator()
     {
-        RuleFor(x => x.Email)
+        RuleFor(x => x.EmailOrUsername)
             .NotEmpty()
-            .EmailAddress()
-            .WithMessage("Invalid email format.");
+            .WithMessage("Email or Username is required.");
 
         RuleFor(x => x.Password)
             .NotEmpty()
@@ -38,14 +37,14 @@ public sealed class LoginCommandHandler(
         CancellationToken cancellationToken)
     {
         var result = await authenticationService.LoginAsync(
-            request.Email,
+            request.EmailOrUsername,
             request.Password,
             request.TwoFactorCode,
             cancellationToken);
 
         if (result == null)
         {
-            return Result.Failure<AuthenticationResult>("Invalid email or password", "Unauthorized");
+            return Result.Failure<AuthenticationResult>("Invalid credentials", "Unauthorized");
         }
 
         if (result.RequiresTwoFactor)

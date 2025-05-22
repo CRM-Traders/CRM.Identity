@@ -62,8 +62,9 @@ public class UnitOfWork : IUnitOfWork
 
                 scope.Complete();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                // ignored
             }
         }
     }
