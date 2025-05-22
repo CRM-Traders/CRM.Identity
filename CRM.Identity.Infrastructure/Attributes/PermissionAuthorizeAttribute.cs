@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace CRM.Identity.Infrastructure.Attributes;
 
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class PermissionAuthorizeAttribute(string title, string section, ActionType actionType)
     : Attribute, IAsyncAuthorizationFilter
 {
