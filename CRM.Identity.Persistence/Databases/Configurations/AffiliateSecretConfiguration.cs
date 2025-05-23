@@ -20,13 +20,6 @@ public class AffiliateSecretConfiguration : AuditableEntityTypeConfiguration<Aff
         builder.HasIndex(s => s.SecretKey)
             .IsUnique();
 
-        builder.Property(s => s.ApiKey)
-            .IsRequired()
-            .HasMaxLength(128);
-
-        builder.HasIndex(s => s.ApiKey)
-            .IsUnique();
-
         builder.Property(s => s.ExpirationDate)
             .IsRequired();
 

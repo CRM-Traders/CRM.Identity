@@ -24,12 +24,6 @@ public sealed class CreateAffiliateSecretCommandValidator : AbstractValidator<Cr
             .MaximumLength(128)
             .WithMessage("Secret key is required and must be between 32 and 128 characters.");
 
-        RuleFor(x => x.ApiKey)
-            .NotEmpty()
-            .MinimumLength(32)
-            .MaximumLength(128)
-            .WithMessage("API key is required and must be between 32 and 128 characters.");
-
         RuleFor(x => x.ExpirationDate)
             .GreaterThan(DateTimeOffset.UtcNow)
             .WithMessage("Expiration date must be in the future.");
@@ -64,19 +58,10 @@ public sealed class CreateAffiliateSecretCommandHandler(
             return Result.Failure<Guid>("Secret key already exists", "Conflict");
         }
 
-        var apiKeySpecification = new AffiliateSecretByApiKeySpecification(request.ApiKey);
-        var existingSecretByApiKey =
-            await affiliateSecretRepository.FirstOrDefaultAsync(apiKeySpecification, cancellationToken);
-
-        if (existingSecretByApiKey != null)
-        {
-            return Result.Failure<Guid>("API key already exists", "Conflict");
-        }
 
         var affiliateSecret = new AffiliateSecret(
             request.AffiliateId,
             request.SecretKey,
-            request.ApiKey,
             request.ExpirationDate,
             request.IpRestriction);
 

@@ -7,11 +7,13 @@ namespace CRM.Identity.Application.Features.AffiliateSecrets.Queries.GetAffiliat
 public sealed record GetAffiliateSecretsByAffiliateQuery(Guid AffiliateId) : IRequest<List<AffiliateSecretDto>>;
 
 public sealed class GetAffiliateSecretsByAffiliateQueryHandler(
-    IRepository<AffiliateSecret> affiliateSecretRepository) : IRequestHandler<GetAffiliateSecretsByAffiliateQuery, List<AffiliateSecretDto>>
+    IRepository<AffiliateSecret> affiliateSecretRepository)
+    : IRequestHandler<GetAffiliateSecretsByAffiliateQuery, List<AffiliateSecretDto>>
 {
-    public async ValueTask<Result<List<AffiliateSecretDto>>> Handle(GetAffiliateSecretsByAffiliateQuery request, CancellationToken cancellationToken)
+    public async ValueTask<Result<List<AffiliateSecretDto>>> Handle(GetAffiliateSecretsByAffiliateQuery request,
+        CancellationToken cancellationToken)
     {
-        var specification = new AffiliateSecretsByAffiliateSpecification(request.AffiliateId,includeAffiliate: true);
+        var specification = new AffiliateSecretsByAffiliateSpecification(request.AffiliateId, includeAffiliate: true);
 
         var affiliateSecrets = await affiliateSecretRepository.ListAsync(specification, cancellationToken);
 
@@ -20,7 +22,6 @@ public sealed class GetAffiliateSecretsByAffiliateQueryHandler(
             s.AffiliateId,
             s.Affiliate?.Name,
             s.SecretKey,
-            s.ApiKey,
             s.ExpirationDate,
             s.IpRestriction,
             s.IsActive,

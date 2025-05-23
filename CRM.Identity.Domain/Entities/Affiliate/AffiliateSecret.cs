@@ -7,7 +7,6 @@ public class AffiliateSecret : AggregateRoot
     public Guid AffiliateId { get; private set; }
     public Affiliate? Affiliate { get; set; }
     public string SecretKey { get; private set; } = string.Empty;
-    public string ApiKey { get; private set; } = string.Empty;
     public DateTimeOffset ExpirationDate { get; private set; }
     public string? IpRestriction { get; private set; }
     public bool IsActive { get; private set; } = true;
@@ -20,13 +19,11 @@ public class AffiliateSecret : AggregateRoot
     public AffiliateSecret(
         Guid affiliateId,
         string secretKey,
-        string apiKey,
         DateTimeOffset expirationDate,
         string? ipRestriction = null)
     {
         AffiliateId = affiliateId;
         SecretKey = secretKey;
-        ApiKey = apiKey;
         ExpirationDate = expirationDate;
         IpRestriction = ipRestriction;
         IsActive = true;
@@ -37,7 +34,6 @@ public class AffiliateSecret : AggregateRoot
             GetType().Name,
             affiliateId,
             secretKey,
-            apiKey,
             expirationDate,
             ipRestriction));
     }

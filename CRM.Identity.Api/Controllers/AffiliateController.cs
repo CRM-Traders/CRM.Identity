@@ -1,3 +1,4 @@
+using CRM.Identity.Application.Common.Models.Grids;
 using CRM.Identity.Application.Features.Affiliates.Commands.CreateAffiliate;
 using CRM.Identity.Application.Features.Affiliates.Commands.DeleteAffiliate;
 using CRM.Identity.Application.Features.Affiliates.Commands.ImportAffiliates;
@@ -52,19 +53,15 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
         return await SendAsync(new DeleteAffiliateCommand(id), cancellationToken);
     }
 
-    [HttpGet]
-    [Permission(13, "View Affiliates", "Affiliates", ActionType.V, RoleConstants.All)]
-    [ProducesResponseType(typeof(GetAffiliatesQueryResponse), StatusCodes.Status200OK)]
+    [HttpPost]
+    //[Permission(13, "View Affiliates", "Affiliates", ActionType.V, RoleConstants.All)]
+    [ProducesResponseType(typeof(GridResponse<AffiliateDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IResult> GetAffiliates(
-        [FromQuery] string? searchTerm,
-        [FromQuery] bool? isActive,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+    public async Task<IResult> GetAffiliates([FromBody] GetAffiliatesQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await SendAsync(new GetAffiliatesQuery(searchTerm, isActive, pageNumber, pageSize), cancellationToken);
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet("{id}")]

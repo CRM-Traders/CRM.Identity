@@ -29,7 +29,7 @@ public sealed class ExportAffiliateSecretsQueryHandler(
         // Headers
         var headers = new[]
         {
-            "ID", "Affiliate ID", "Affiliate Name", "Secret Key", "API Key",
+            "ID", "Affiliate ID", "Affiliate Name", "Secret Key",
             "Expiration Date", "IP Restriction", "Is Active", "Used Count",
             "Is Expired", "Created At", "Last Modified At"
         };
@@ -54,14 +54,13 @@ public sealed class ExportAffiliateSecretsQueryHandler(
             worksheet.Cell(row, 2).Value = secret.AffiliateId.ToString();
             worksheet.Cell(row, 3).Value = secret.Affiliate?.Name ?? "";
             worksheet.Cell(row, 4).Value = secret.SecretKey;
-            worksheet.Cell(row, 5).Value = secret.ApiKey;
-            worksheet.Cell(row, 6).Value = secret.ExpirationDate.ToString("yyyy-MM-dd HH:mm:ss");
-            worksheet.Cell(row, 7).Value = secret.IpRestriction ?? "";
-            worksheet.Cell(row, 8).Value = secret.IsActive ? "Yes" : "No";
-            worksheet.Cell(row, 9).Value = secret.UsedCount;
-            worksheet.Cell(row, 10).Value = secret.IsExpired() ? "Yes" : "No";
-            worksheet.Cell(row, 11).Value = secret.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
-            worksheet.Cell(row, 12).Value = secret.LastModifiedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+            worksheet.Cell(row, 5).Value = secret.ExpirationDate.ToString("yyyy-MM-dd HH:mm:ss");
+            worksheet.Cell(row, 6).Value = secret.IpRestriction ?? "";
+            worksheet.Cell(row, 7).Value = secret.IsActive ? "Yes" : "No";
+            worksheet.Cell(row, 8).Value = secret.UsedCount;
+            worksheet.Cell(row, 9).Value = secret.IsExpired() ? "Yes" : "No";
+            worksheet.Cell(row, 10).Value = secret.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+            worksheet.Cell(row, 11).Value = secret.LastModifiedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
         }
 
         // Auto-fit columns
