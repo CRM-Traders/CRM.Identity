@@ -45,7 +45,7 @@ public class AuthController(IMediator _sender) : BaseController(_sender)
     }
 
     [HttpPost("invalidate-all-sessions")]
-    [Permission(2, "Invalidate All Sessions", "Auth", ActionType.D, RoleConstants.Admin)]
+    //[Permission(2, "Invalidate All Sessions", "Auth", ActionType.D, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> InvalidateAllSessions(CancellationToken cancellationToken)

@@ -10,7 +10,7 @@ namespace CRM.Identity.Api.Controllers;
 public class PermissionsController(IMediator _send) : BaseController(_send)
 {
     [HttpPost("grant")]
-    [Permission(1, "Grant Permission", "Permissions", ActionType.C, RoleConstants.Admin)]
+    //[Permission(1, "Grant Permission", "Permissions", ActionType.C, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -21,7 +21,7 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost("revoke")]
-    [Permission(2, "Revoke Permission", "Permissions", ActionType.D, RoleConstants.Admin)]
+    //[Permission(2, "Revoke Permission", "Permissions", ActionType.D, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -32,7 +32,7 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("user/{userId}")]
-    [Permission(3, "View User Permissions", "Permissions", ActionType.V, RoleConstants.Admin)]
+    //[Permission(3, "View User Permissions", "Permissions", ActionType.V, RoleConstants.Admin)]
     [ProducesResponseType(typeof(IEnumerable<PermissionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IResult> GetUserPermissions(Guid userId, CancellationToken cancellationToken)
@@ -52,7 +52,7 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
     [HttpGet("all")]
     [Authorize]
     [ProducesResponseType(typeof(IEnumerable<PermissionSectionDto>), StatusCodes.Status200OK)]
-    //[Permission(4, "View All Permissions", "Permissions", ActionType.V, RoleConstants.Admin)]
+    ////[Permission(4, "View All Permissions", "Permissions", ActionType.V, RoleConstants.Admin)]
     public async Task<IResult> GetAllPermissions([FromQuery] AllPermissionsQuery request, CancellationToken cancellationToken)
     {
         return await SendAsync(request, cancellationToken);

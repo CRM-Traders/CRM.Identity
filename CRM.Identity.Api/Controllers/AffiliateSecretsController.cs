@@ -14,7 +14,7 @@ namespace CRM.Identity.Api.Controllers;
 public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
 {
     [HttpPost]
-    [Permission(20, "Create Affiliate Secret", "AffiliateSecrets", ActionType.C, RoleConstants.Admin)]
+    //[Permission(20, "Create Affiliate Secret", "AffiliateSecrets", ActionType.C, RoleConstants.Admin)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -27,7 +27,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPut("{id}")]
-    [Permission(21, "Update Affiliate Secret", "AffiliateSecrets", ActionType.E, RoleConstants.Admin)]
+    //[Permission(21, "Update Affiliate Secret", "AffiliateSecrets", ActionType.E, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -42,7 +42,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost("{id}/activate")]
-    [Permission(22, "Activate Affiliate Secret", "AffiliateSecrets", ActionType.E, RoleConstants.Admin)]
+    //[Permission(22, "Activate Affiliate Secret", "AffiliateSecrets", ActionType.E, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -53,7 +53,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost("{id}/deactivate")]
-    [Permission(23, "Deactivate Affiliate Secret", "AffiliateSecrets", ActionType.E, RoleConstants.Admin)]
+    //[Permission(23, "Deactivate Affiliate Secret", "AffiliateSecrets", ActionType.E, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -64,7 +64,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpDelete("{id}")]
-    [Permission(24, "Delete Affiliate Secret", "AffiliateSecrets", ActionType.D, RoleConstants.Admin)]
+    //[Permission(24, "Delete Affiliate Secret", "AffiliateSecrets", ActionType.D, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -75,7 +75,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet]
-    [Permission(25, "View Affiliate Secrets", "AffiliateSecrets", ActionType.V, RoleConstants.Admin)]
+    //[Permission(25, "View Affiliate Secrets", "AffiliateSecrets", ActionType.V, RoleConstants.Admin)]
     [ProducesResponseType(typeof(GetAffiliateSecretsQueryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -92,7 +92,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("{id}")]
-    [Permission(26, "View Affiliate Secret Details", "AffiliateSecrets", ActionType.V, RoleConstants.Admin)]
+    //[Permission(26, "View Affiliate Secret Details", "AffiliateSecrets", ActionType.V, RoleConstants.Admin)]
     [ProducesResponseType(typeof(AffiliateSecretDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -103,8 +103,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("by-affiliate/{affiliateId}")]
-    [Permission(27, "View Affiliate Secrets by Affiliate", "AffiliateSecrets", ActionType.V,
-        RoleConstants.AllExceptUser)]
+    //[Permission(27, "View Affiliate Secrets by Affiliate", "AffiliateSecrets", ActionType.V,RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(List<AffiliateSecretDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -114,7 +113,7 @@ public class AffiliateSecretsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("export")]
-    [Permission(28, "Export Affiliate Secrets", "AffiliateSecrets", ActionType.V, RoleConstants.Admin)]
+    //[Permission(28, "Export Affiliate Secrets", "AffiliateSecrets", ActionType.V, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

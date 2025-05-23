@@ -14,7 +14,7 @@ namespace CRM.Identity.Api.Controllers;
 public class AffiliatesController(IMediator _send) : BaseController(_send)
 {
     [HttpPost]
-    [Permission(10, "Create Affiliate", "Affiliates", ActionType.C, RoleConstants.AllExceptUser)]
+    //[Permission(10, "Create Affiliate", "Affiliates", ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -26,7 +26,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPut("{id}")]
-    [Permission(11, "Update Affiliate", "Affiliates", ActionType.E, RoleConstants.AllExceptUser)]
+    //[Permission(11, "Update Affiliate", "Affiliates", ActionType.E, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -42,7 +42,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
     }
 
     [HttpDelete("{id}")]
-    [Permission(12, "Delete Affiliate", "Affiliates", ActionType.D, RoleConstants.Admin)]
+    //[Permission(12, "Delete Affiliate", "Affiliates", ActionType.D, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -54,7 +54,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost]
-    //[Permission(13, "View Affiliates", "Affiliates", ActionType.V, RoleConstants.All)]
+    ////[Permission(13, "View Affiliates", "Affiliates", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GridResponse<AffiliateDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -65,7 +65,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("{id}")]
-    [Permission(14, "View Affiliate Details", "Affiliates", ActionType.V, RoleConstants.All)]
+    //[Permission(14, "View Affiliate Details", "Affiliates", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(AffiliateDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -76,7 +76,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost("import")]
-    [Permission(15, "Import Affiliates", "Affiliates", ActionType.C, RoleConstants.AllExceptUser)]
+    //[Permission(15, "Import Affiliates", "Affiliates", ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(ImportAffiliatesResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -93,7 +93,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("export")]
-    [Permission(16, "Export Affiliates", "Affiliates", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(16, "Export Affiliates", "Affiliates", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -113,7 +113,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("import-template")]
-    [Permission(17, "Download Affiliate Import Template", "Affiliates", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(17, "Download Affiliate Import Template", "Affiliates", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetImportTemplate(CancellationToken cancellationToken)

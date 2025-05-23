@@ -16,7 +16,7 @@ namespace CRM.Identity.Api.Controllers;
 public class ClientsController(IMediator _send) : BaseController(_send)
 {
     [HttpPost]
-    [Permission(30, "Create Client", "Clients", ActionType.C, RoleConstants.AllExceptUser)]
+    //[Permission(30, "Create Client", "Clients", ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -28,7 +28,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPut("{id}")]
-    [Permission(31, "Update Client", "Clients", ActionType.E, RoleConstants.AllExceptUser)]
+    //[Permission(31, "Update Client", "Clients", ActionType.E, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -44,7 +44,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPut("{id}/status")]
-    [Permission(32, "Change Client Status", "Clients", ActionType.E, RoleConstants.AllExceptUser)]
+    //[Permission(32, "Change Client Status", "Clients", ActionType.E, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -59,7 +59,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPut("{clientId}/assign-affiliate/{affiliateId}")]
-    [Permission(33, "Assign Client to Affiliate", "Clients", ActionType.E, RoleConstants.AllExceptUser)]
+    //[Permission(33, "Assign Client to Affiliate", "Clients", ActionType.E, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -71,7 +71,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet]
-    [Permission(34, "View Clients", "Clients", ActionType.V, RoleConstants.All)]
+    //[Permission(34, "View Clients", "Clients", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GridResponse<ClientDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -82,7 +82,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("{id}")]
-    [Permission(35, "View Client Details", "Clients", ActionType.V, RoleConstants.All)]
+    //[Permission(35, "View Client Details", "Clients", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(ClientDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -93,7 +93,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost("import")]
-    [Permission(36, "Import Clients", "Clients", ActionType.C, RoleConstants.AllExceptUser)]
+    //[Permission(36, "Import Clients", "Clients", ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(ImportClientsResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -110,7 +110,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("export")]
-    [Permission(37, "Export Clients", "Clients", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(37, "Export Clients", "Clients", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -135,7 +135,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("by-affiliate/{affiliateId}")]
-    [Permission(38, "View Clients by Affiliate", "Clients", ActionType.V, RoleConstants.All)]
+    //[Permission(38, "View Clients by Affiliate", "Clients", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GridResponse<ClientDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -153,7 +153,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("by-affiliate/{affiliateId}/export")]
-    [Permission(39, "Export Clients by Affiliate", "Clients", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(39, "Export Clients by Affiliate", "Clients", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -173,12 +173,12 @@ public class ClientsController(IMediator _send) : BaseController(_send)
             return ToResult(result);
 
         var fileName = $"clients_affiliate_{affiliateId}_export_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
-        return Results.File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        return Results.File(result.Value!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             fileName);
     }
 
     [HttpGet("import-template")]
-    [Permission(40, "Download Client Import Template", "Clients", ActionType.V, RoleConstants.AllExceptUser)]
+    ////[Permission(40, "Download Client Import Template", "Clients", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetImportTemplate(CancellationToken cancellationToken)

@@ -13,7 +13,7 @@ namespace CRM.Identity.Api.Controllers;
 public class TradingAccountsController(IMediator mediator) : BaseController(mediator)
 {
     [HttpPost]
-    [Permission(50, "Create Trading Account", "TradingAccounts", ActionType.C, RoleConstants.AllExceptUser)]
+    //[Permission(50, "Create Trading Account", "TradingAccounts", ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -26,7 +26,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpPut("{id}")]
-    [Permission(51, "Update Trading Account", "TradingAccounts", ActionType.E, RoleConstants.AllExceptUser)]
+    //[Permission(51, "Update Trading Account", "TradingAccounts", ActionType.E, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -41,7 +41,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpDelete("{id}")]
-    [Permission(52, "Delete Trading Account", "TradingAccounts", ActionType.D, RoleConstants.Admin)]
+    //[Permission(52, "Delete Trading Account", "TradingAccounts", ActionType.D, RoleConstants.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -52,7 +52,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpGet]
-    [Permission(53, "View Trading Accounts", "TradingAccounts", ActionType.V, RoleConstants.All)]
+    //[Permission(53, "View Trading Accounts", "TradingAccounts", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GetTradingAccountsQueryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -71,7 +71,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpGet("{id}")]
-    [Permission(54, "View Trading Account Details", "TradingAccounts", ActionType.V, RoleConstants.All)]
+    //[Permission(54, "View Trading Account Details", "TradingAccounts", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(TradingAccountDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -82,7 +82,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpGet("by-client/{clientId}")]
-    [Permission(55, "View Trading Accounts by Client", "TradingAccounts", ActionType.V, RoleConstants.All)]
+    //[Permission(55, "View Trading Accounts by Client", "TradingAccounts", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(List<TradingAccountDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -92,7 +92,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpGet("export")]
-    [Permission(56, "Export Trading Accounts", "TradingAccounts", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(56, "Export Trading Accounts", "TradingAccounts", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -115,7 +115,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpGet("by-client/{clientId}/export")]
-    [Permission(57, "Export Trading Accounts by Client", "TradingAccounts", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(57, "Export Trading Accounts by Client", "TradingAccounts", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -138,7 +138,7 @@ public class TradingAccountsController(IMediator mediator) : BaseController(medi
     }
 
     [HttpGet("summary")]
-    [Permission(58, "View Trading Accounts Summary", "TradingAccounts", ActionType.V, RoleConstants.All)]
+    //[Permission(58, "View Trading Accounts Summary", "TradingAccounts", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

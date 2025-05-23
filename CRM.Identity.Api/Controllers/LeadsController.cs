@@ -15,7 +15,7 @@ namespace CRM.Identity.Api.Controllers;
 public class LeadsController(IMediator _send) : BaseController(_send)
 {
     [HttpPost]
-    [Permission(40, "Create Lead", "Leads", ActionType.C, RoleConstants.All)]
+    //[Permission(40, "Create Lead", "Leads", ActionType.C, RoleConstants.All)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -26,7 +26,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPut("{id}")]
-    [Permission(41, "Update Lead", "Leads", ActionType.E, RoleConstants.All)]
+    //[Permission(41, "Update Lead", "Leads", ActionType.E, RoleConstants.All)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -42,7 +42,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost("{leadId}/convert-to-client")]
-    [Permission(42, "Convert Lead to Client", "Leads", ActionType.E, RoleConstants.AllExceptUser)]
+    //[Permission(42, "Convert Lead to Client", "Leads", ActionType.E, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -58,7 +58,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet]
-    [Permission(43, "View Leads", "Leads", ActionType.V, RoleConstants.All)]
+    //[Permission(43, "View Leads", "Leads", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -69,7 +69,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("{id}")]
-    [Permission(44, "View Lead Details", "Leads", ActionType.V, RoleConstants.All)]
+    //[Permission(44, "View Lead Details", "Leads", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(LeadDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -80,7 +80,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpPost("import")]
-    [Permission(45, "Import Leads", "Leads", ActionType.C, RoleConstants.AllExceptUser)]
+    //[Permission(45, "Import Leads", "Leads", ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(ImportLeadsResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -97,7 +97,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("export")]
-    [Permission(46, "Export Leads", "Leads", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(46, "Export Leads", "Leads", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -122,7 +122,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
 
 
     [HttpGet("by-country/{country}")]
-    [Permission(47, "View Leads by Country", "Leads", ActionType.V, RoleConstants.All)]
+    //[Permission(47, "View Leads by Country", "Leads", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -136,7 +136,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
 
 
     [HttpGet("by-source/{source}")]
-    [Permission(48, "View Leads by Source", "Leads", ActionType.V, RoleConstants.All)]
+    //[Permission(48, "View Leads by Source", "Leads", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -149,7 +149,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("conversion-candidates")]
-    [Permission(49, "View Lead Conversion Candidates", "Leads", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(49, "View Lead Conversion Candidates", "Leads", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -168,7 +168,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("import-template")]
-    [Permission(50, "Download Lead Import Template", "Leads", ActionType.V, RoleConstants.AllExceptUser)]
+    //[Permission(50, "Download Lead Import Template", "Leads", ActionType.V, RoleConstants.AllExceptUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetImportTemplate(CancellationToken cancellationToken)
