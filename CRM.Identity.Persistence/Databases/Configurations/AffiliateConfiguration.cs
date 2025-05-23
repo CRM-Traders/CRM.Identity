@@ -8,18 +8,7 @@ public class AffiliateConfiguration : AuditableEntityTypeConfiguration<Affiliate
     {
         base.Configure(builder);
 
-        builder.ToTable(nameof(Affiliate));
-
-        builder.Property(a => a.Name)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(a => a.Email)
-            .IsRequired()
-            .HasMaxLength(200);
-
-        builder.HasIndex(a => a.Email)
-            .IsUnique();
+        builder.ToTable(nameof(Affiliate)); 
 
         builder.Property(a => a.Phone)
             .HasMaxLength(20)
@@ -34,7 +23,11 @@ public class AffiliateConfiguration : AuditableEntityTypeConfiguration<Affiliate
             .HasDefaultValue(true);
 
         builder.HasIndex(a => a.IsActive);
-
-        builder.HasIndex(a => a.Name);
+        builder.Property(up => up.UserId)
+            .IsRequired();
+        builder.HasOne(up => up.User)
+            .WithMany()
+            .HasForeignKey(up => up.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

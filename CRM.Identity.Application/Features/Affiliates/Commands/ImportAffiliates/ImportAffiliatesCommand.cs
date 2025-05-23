@@ -1,5 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
 using ClosedXML.Excel;
-using CRM.Identity.Application.Common.Specifications.Affiliates;
 using CRM.Identity.Domain.Entities.Affiliate;
 
 namespace CRM.Identity.Application.Features.Affiliates.Commands.ImportAffiliates;
@@ -9,7 +10,15 @@ public sealed record ImportAffiliatesCommand(byte[] FileContent) : IRequest<Impo
 public sealed record ImportAffiliatesResult(
     int SuccessCount,
     int FailureCount,
+    List<ImportAffiliateResult> AffiliateResults,
     List<string> Errors);
+
+public sealed record ImportAffiliateResult(
+    string Name,
+    string Email,
+    string GeneratedPassword,
+    Guid AffiliateId,
+    Guid UserId);
 
 public sealed class ImportAffiliatesCommandValidator : AbstractValidator<ImportAffiliatesCommand>
 {
@@ -23,11 +32,15 @@ public sealed class ImportAffiliatesCommandValidator : AbstractValidator<ImportA
 
 public sealed class ImportAffiliatesCommandHandler(
     IRepository<Affiliate> affiliateRepository,
+    IRepository<User> userRepository,
+    IPasswordService passwordService,
     IUnitOfWork unitOfWork) : IRequestHandler<ImportAffiliatesCommand, ImportAffiliatesResult>
 {
-    public async ValueTask<Result<ImportAffiliatesResult>> Handle(ImportAffiliatesCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result<ImportAffiliatesResult>> Handle(ImportAffiliatesCommand request,
+        CancellationToken cancellationToken)
     {
         var errors = new List<string>();
+        var affiliateResults = new List<ImportAffiliateResult>();
         var successCount = 0;
         var failureCount = 0;
 
@@ -45,33 +58,49 @@ public sealed class ImportAffiliatesCommandHandler(
                 {
                     var name = row.Cell(1).GetString().Trim();
                     var email = row.Cell(2).GetString().Trim().ToLower();
-                    var phone = row.Cell(3).GetString().Trim();
-                    var website = row.Cell(4).GetString().Trim();
+                    var firstName = row.Cell(3).GetString().Trim();
+                    var lastName = row.Cell(4).GetString().Trim();
+                    var phone = row.Cell(5).GetString().Trim();
+                    var website = row.Cell(6).GetString().Trim();
 
-                    if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email))
+                    if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) ||
+                        string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
                     {
-                        errors.Add($"Row {row.RowNumber()}: Name and Email are required");
+                        errors.Add($"Row {row.RowNumber()}: Name, Email, First Name, and Last Name are required");
                         failureCount++;
                         continue;
                     }
 
-                    var emailSpecification = new AffiliateByEmailSpecification(email);
-                    var existingAffiliate = await affiliateRepository.FirstOrDefaultAsync(emailSpecification, cancellationToken);
 
-                    if (existingAffiliate != null)
+                    var existingUser = await userRepository.FirstOrDefaultAsync(
+                        new UserByEmailOrUsernameSpec(email, email), cancellationToken);
+
+                    if (existingUser != null)
                     {
-                        errors.Add($"Row {row.RowNumber()}: Affiliate with email {email} already exists");
+                        errors.Add($"Row {row.RowNumber()}: User with email {email} already exists");
                         failureCount++;
                         continue;
                     }
+
+                    var generatedPassword = GenerateStrongPassword();
+                    var hashedPassword = passwordService.HashPasword(generatedPassword, out var salt);
+                    var saltString = Convert.ToBase64String(salt);
+
+                    var user = new User(firstName, lastName, email, email,
+                        string.IsNullOrEmpty(phone) ? null : phone, hashedPassword, saltString);
 
                     var affiliate = new Affiliate(
-                        name,
-                        email,
                         string.IsNullOrEmpty(phone) ? null : phone,
-                        string.IsNullOrEmpty(website) ? null : website);
+                        string.IsNullOrEmpty(website) ? null : website)
+                    {
+                        UserId = user.Id
+                    };
 
+                    await userRepository.AddAsync(user, cancellationToken);
                     await affiliateRepository.AddAsync(affiliate, cancellationToken);
+
+                    affiliateResults.Add(new ImportAffiliateResult(name, email, generatedPassword, affiliate.Id,
+                        user.Id));
                     successCount++;
                 }
                 catch (Exception ex)
@@ -83,11 +112,59 @@ public sealed class ImportAffiliatesCommandHandler(
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(new ImportAffiliatesResult(successCount, failureCount, errors));
+            return Result.Success(new ImportAffiliatesResult(successCount, failureCount, affiliateResults, errors));
         }
         catch (Exception ex)
         {
             return Result.Failure<ImportAffiliatesResult>($"Error processing file: {ex.Message}");
         }
+    }
+
+    private static string GenerateStrongPassword()
+    {
+        const string upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        const string digits = "0123456789";
+        const string specialChars = "!@#$%^&*()_-+=<>?";
+
+        var password = new StringBuilder();
+        using var rng = RandomNumberGenerator.Create();
+
+        password.Append(GetRandomChar(upperCase, rng));
+        password.Append(GetRandomChar(lowerCase, rng));
+        password.Append(GetRandomChar(digits, rng));
+        password.Append(GetRandomChar(specialChars, rng));
+
+        var allChars = upperCase + lowerCase + digits + specialChars;
+        for (int i = 0; i < 8; i++)
+        {
+            password.Append(GetRandomChar(allChars, rng));
+        }
+
+        return ShuffleString(password.ToString(), rng);
+    }
+
+    private static char GetRandomChar(string chars, RandomNumberGenerator rng)
+    {
+        var data = new byte[4];
+        rng.GetBytes(data);
+        var value = BitConverter.ToUInt32(data, 0);
+        return chars[(int)(value % (uint)chars.Length)];
+    }
+
+    private static string ShuffleString(string input, RandomNumberGenerator rng)
+    {
+        var array = input.ToCharArray();
+        var n = array.Length;
+        while (n > 1)
+        {
+            var data = new byte[4];
+            rng.GetBytes(data);
+            var k = (int)(BitConverter.ToUInt32(data, 0) % (uint)n);
+            n--;
+            (array[n], array[k]) = (array[k], array[n]);
+        }
+
+        return new string(array);
     }
 }

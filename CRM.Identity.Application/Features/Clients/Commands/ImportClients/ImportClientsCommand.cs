@@ -1,7 +1,11 @@
+using System.Security.Cryptography;
+using System.Text;
 using ClosedXML.Excel;
 using CRM.Identity.Application.Common.Specifications.Clients;
+using CRM.Identity.Application.Common.Specifications.Leads;
 using CRM.Identity.Domain.Entities.Affiliate;
 using CRM.Identity.Domain.Entities.Clients;
+using CRM.Identity.Domain.Entities.Leads;
 
 namespace CRM.Identity.Application.Features.Clients.Commands.ImportClients;
 
@@ -10,7 +14,17 @@ public sealed record ImportClientsCommand(byte[] FileContent) : IRequest<ImportC
 public sealed record ImportClientsResult(
     int SuccessCount,
     int FailureCount,
+    List<ImportClientResult> ClientResults,
     List<string> Errors);
+
+public sealed record ImportClientResult(
+    string FirstName,
+    string LastName,
+    string Email,
+    string GeneratedPassword,
+    Guid ClientId,
+    Guid UserId,
+    Guid AffiliateId);
 
 public sealed class ImportClientsCommandValidator : AbstractValidator<ImportClientsCommand>
 {
@@ -24,13 +38,18 @@ public sealed class ImportClientsCommandValidator : AbstractValidator<ImportClie
 
 public sealed class ImportClientsCommandHandler(
     IRepository<Client> clientRepository,
+    IRepository<Lead> leadRepository,
     IRepository<Affiliate> affiliateRepository,
+    IRepository<User> userRepository,
+    IPasswordService passwordService,
     IUnitOfWork unitOfWork,
     IUserContext userContext) : IRequestHandler<ImportClientsCommand, ImportClientsResult>
 {
-    public async ValueTask<Result<ImportClientsResult>> Handle(ImportClientsCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result<ImportClientsResult>> Handle(ImportClientsCommand request,
+        CancellationToken cancellationToken)
     {
         var errors = new List<string>();
+        var clientResults = new List<ImportClientResult>();
         var successCount = 0;
         var failureCount = 0;
 
@@ -56,9 +75,11 @@ public sealed class ImportClientsCommandHandler(
                     var dateOfBirthStr = row.Cell(8).GetString().Trim();
                     var source = row.Cell(9).GetString().Trim();
 
-                    if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(affiliateIdStr))
+                    if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) ||
+                        string.IsNullOrEmpty(email) || string.IsNullOrEmpty(affiliateIdStr))
                     {
-                        errors.Add($"Row {row.RowNumber()}: First Name, Last Name, Email, and Affiliate ID are required");
+                        errors.Add(
+                            $"Row {row.RowNumber()}: First Name, Last Name, Email, and Affiliate ID are required");
                         failureCount++;
                         continue;
                     }
@@ -70,20 +91,46 @@ public sealed class ImportClientsCommandHandler(
                         continue;
                     }
 
+                    // Check if affiliate exists
                     var affiliate = await affiliateRepository.GetByIdAsync(affiliateId, cancellationToken);
                     if (affiliate == null)
                     {
-                        errors.Add($"Row {row.RowNumber()}: Affiliate not found");
+                        errors.Add($"Row {row.RowNumber()}: Affiliate with ID {affiliateId} not found");
                         failureCount++;
                         continue;
                     }
 
-                    var emailSpecification = new ClientByEmailSpecification(email);
-                    var existingClient = await clientRepository.FirstOrDefaultAsync(emailSpecification, cancellationToken);
+                    // Check if already exists as client
+                    var clientEmailSpecification = new ClientByEmailSpecification(email);
+                    var existingClient =
+                        await clientRepository.FirstOrDefaultAsync(clientEmailSpecification, cancellationToken);
 
                     if (existingClient != null)
                     {
                         errors.Add($"Row {row.RowNumber()}: Client with email {email} already exists");
+                        failureCount++;
+                        continue;
+                    }
+
+                    // Check if already exists as lead
+                    var leadEmailSpecification = new LeadByEmailSpecification(email);
+                    var existingLead =
+                        await leadRepository.FirstOrDefaultAsync(leadEmailSpecification, cancellationToken);
+
+                    if (existingLead != null)
+                    {
+                        errors.Add($"Row {row.RowNumber()}: Lead with email {email} already exists");
+                        failureCount++;
+                        continue;
+                    }
+
+                    // Check if user exists
+                    var existingUser = await userRepository.FirstOrDefaultAsync(
+                        new UserByEmailOrUsernameSpec(email, email), cancellationToken);
+
+                    if (existingUser != null)
+                    {
+                        errors.Add($"Row {row.RowNumber()}: User with email {email} already exists");
                         failureCount++;
                         continue;
                     }
@@ -93,6 +140,13 @@ public sealed class ImportClientsCommandHandler(
                     {
                         dateOfBirth = parsedDate;
                     }
+
+                    var generatedPassword = GenerateStrongPassword();
+                    var hashedPassword = passwordService.HashPasword(generatedPassword, out var salt);
+                    var saltString = Convert.ToBase64String(salt);
+
+                    var user = new User(firstName, lastName, email, email,
+                        string.IsNullOrEmpty(telephone) ? null : telephone, hashedPassword, saltString);
 
                     var client = new Client(
                         firstName,
@@ -106,9 +160,16 @@ public sealed class ImportClientsCommandHandler(
                         userContext.IpAddress,
                         "CRM System",
                         "Excel Import",
-                        string.IsNullOrEmpty(source) ? null : source);
+                        string.IsNullOrEmpty(source) ? null : source)
+                    {
+                        UserId = user.Id
+                    };
 
+                    await userRepository.AddAsync(user, cancellationToken);
                     await clientRepository.AddAsync(client, cancellationToken);
+
+                    clientResults.Add(new ImportClientResult(firstName, lastName, email, generatedPassword, client.Id,
+                        user.Id, affiliateId));
                     successCount++;
                 }
                 catch (Exception ex)
@@ -120,11 +181,59 @@ public sealed class ImportClientsCommandHandler(
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(new ImportClientsResult(successCount, failureCount, errors));
+            return Result.Success(new ImportClientsResult(successCount, failureCount, clientResults, errors));
         }
         catch (Exception ex)
         {
             return Result.Failure<ImportClientsResult>($"Error processing file: {ex.Message}");
         }
+    }
+
+    private static string GenerateStrongPassword()
+    {
+        const string upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        const string digits = "0123456789";
+        const string specialChars = "!@#$%^&*()_-+=<>?";
+
+        var password = new StringBuilder();
+        using var rng = RandomNumberGenerator.Create();
+
+        password.Append(GetRandomChar(upperCase, rng));
+        password.Append(GetRandomChar(lowerCase, rng));
+        password.Append(GetRandomChar(digits, rng));
+        password.Append(GetRandomChar(specialChars, rng));
+
+        var allChars = upperCase + lowerCase + digits + specialChars;
+        for (int i = 0; i < 8; i++)
+        {
+            password.Append(GetRandomChar(allChars, rng));
+        }
+
+        return ShuffleString(password.ToString(), rng);
+    }
+
+    private static char GetRandomChar(string chars, RandomNumberGenerator rng)
+    {
+        var data = new byte[4];
+        rng.GetBytes(data);
+        var value = BitConverter.ToUInt32(data, 0);
+        return chars[(int)(value % (uint)chars.Length)];
+    }
+
+    private static string ShuffleString(string input, RandomNumberGenerator rng)
+    {
+        var array = input.ToCharArray();
+        var n = array.Length;
+        while (n > 1)
+        {
+            var data = new byte[4];
+            rng.GetBytes(data);
+            var k = (int)(BitConverter.ToUInt32(data, 0) % (uint)n);
+            n--;
+            (array[n], array[k]) = (array[k], array[n]);
+        }
+
+        return new string(array);
     }
 }

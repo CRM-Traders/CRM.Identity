@@ -1,23 +1,15 @@
+using CRM.Identity.Application.Common.Models.Grids;
+using CRM.Identity.Application.Common.Services.Grids;
 using CRM.Identity.Application.Common.Specifications.Leads;
 using CRM.Identity.Domain.Entities.Clients.Enums;
 using CRM.Identity.Domain.Entities.Leads;
+using Microsoft.EntityFrameworkCore;
 
 namespace CRM.Identity.Application.Features.Leads.Queries.GetLeads;
 
-public sealed record GetLeadsQuery(
-    string? SearchTerm,
-    ClientStatus? Status,
-    bool? IsProblematic,
-    string? Country,
-    string? Source,
-    int PageNumber = 1,
-    int PageSize = 10) : IRequest<GetLeadsQueryResponse>;
-
-public sealed record GetLeadsQueryResponse(
-    List<LeadDto> Leads,
-    int TotalCount,
-    int PageNumber,
-    int PageSize);
+public sealed class GetLeadsQuery : GridQueryBase, IRequest<GridResponse<LeadDto>>
+{
+}
 
 public sealed record LeadDto(
     Guid Id,
@@ -26,56 +18,38 @@ public sealed record LeadDto(
     string Email,
     string? Telephone,
     string? Country,
-    string? Language,
     ClientStatus Status,
     bool IsProblematic,
-    string? Source,
-    DateTime RegistrationDate,
-    DateTime? LastCommunication);
+    bool IsBonusAbuser,
+    string? UserFullName,
+    DateTime RegistrationDate);
 
 public sealed class GetLeadsQueryHandler(
-    IRepository<Lead> leadRepository) : IRequestHandler<GetLeadsQuery, GetLeadsQueryResponse>
+    IRepository<Lead> leadRepository,
+    IGridService gridService) : IRequestHandler<GetLeadsQuery, GridResponse<LeadDto>>
 {
-    public async ValueTask<Result<GetLeadsQueryResponse>> Handle(GetLeadsQuery request,
+    public async ValueTask<Result<GridResponse<LeadDto>>> Handle(GetLeadsQuery request,
         CancellationToken cancellationToken)
     {
-        var specification = new LeadsFilterSpecification(
-            request.SearchTerm,
-            request.Status,
-            request.IsProblematic,
-            request.Country,
-            request.Source,
-            request.PageNumber,
-            request.PageSize);
+        var query = leadRepository.GetQueryable()
+            .Include(l => l.User);
 
-        var leads = await leadRepository.ListAsync(specification, cancellationToken);
-        var totalCount = await leadRepository.CountAsync(new LeadsCountSpecification(
-            request.SearchTerm,
-            request.Status,
-            request.IsProblematic,
-            request.Country,
-            request.Source), cancellationToken);
+        var result = await gridService.ProcessGridQuery(
+            query,
+            request,
+            lead => new LeadDto(
+                lead.Id,
+                lead.FirstName,
+                lead.LastName,
+                lead.Email,
+                lead.Telephone,
+                lead.Country,
+                lead.Status,
+                lead.IsProblematic,
+                lead.IsBonusAbuser,
+                lead.User != null ? $"{lead.User.FirstName} {lead.User.LastName}" : null,
+                lead.RegistrationDate), cancellationToken);
 
-        var leadDtos = leads.Select(l => new LeadDto(
-            l.Id,
-            l.FirstName,
-            l.LastName,
-            l.Email,
-            l.Telephone,
-            l.Country,
-            l.Language,
-            l.Status,
-            l.IsProblematic,
-            l.Source,
-            l.RegistrationDate,
-            l.LastCommunication)).ToList();
-
-        var response = new GetLeadsQueryResponse(
-            leadDtos,
-            totalCount,
-            request.PageNumber,
-            request.PageSize);
-
-        return Result.Success(response);
+        return Result.Success(result);
     }
 }

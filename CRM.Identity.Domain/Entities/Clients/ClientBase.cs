@@ -1,6 +1,7 @@
 using CRM.Identity.Domain.Entities.Clients.DomainEvents;
 using CRM.Identity.Domain.Entities.Clients.Enums;
 using CRM.Identity.Domain.Entities.TradingAccounts;
+using CRM.Identity.Domain.Entities.Users;
 
 namespace CRM.Identity.Domain.Entities.Clients;
 
@@ -47,9 +48,13 @@ public class ClientBase : AggregateRoot
     public bool AllowTransactions { get; protected set; } = true;
 
     public bool AnonymousCall { get; protected set; } = false;
+    public Guid UserId { get; set; }
+    public User? User { get; set; }
     public virtual ICollection<TradingAccount>? TradingAccounts { get; protected set; }
 
-    protected ClientBase() { }
+    protected ClientBase()
+    {
+    }
 
     protected ClientBase(
         string firstName,

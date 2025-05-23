@@ -38,7 +38,8 @@ public sealed record ClientDetailDto(
 public sealed class GetClientByIdQueryHandler(
     IRepository<Client> clientRepository) : IRequestHandler<GetClientByIdQuery, ClientDetailDto>
 {
-    public async ValueTask<Result<ClientDetailDto>> Handle(GetClientByIdQuery request, CancellationToken cancellationToken)
+    public async ValueTask<Result<ClientDetailDto>> Handle(GetClientByIdQuery request,
+        CancellationToken cancellationToken)
     {
         var specification = new ClientByIdWithAffiliateSpecification(request.Id);
         var client = await clientRepository.FirstOrDefaultAsync(specification, cancellationToken);
@@ -67,7 +68,7 @@ public sealed class GetClientByIdQueryHandler(
             client.BonusAbuserReason,
             client.HasInvestments,
             client.AffiliateId,
-            client.Affiliate?.Name,
+            $"{client.Affiliate?.User!.FirstName} {client.Affiliate?.User!.LastName}",
             client.FTDTime,
             client.LTDTime,
             client.QualificationTime,

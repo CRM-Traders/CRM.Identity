@@ -1,3 +1,4 @@
+using CRM.Identity.Application.Common.Models.Grids;
 using CRM.Identity.Application.Features.Clients.Commands.AssignClientToAffiliate;
 using CRM.Identity.Application.Features.Clients.Commands.ChangeClientStatus;
 using CRM.Identity.Application.Features.Clients.Commands.CreateClient;
@@ -71,22 +72,13 @@ public class ClientsController(IMediator _send) : BaseController(_send)
 
     [HttpGet]
     [Permission(34, "View Clients", "Clients", ActionType.V, RoleConstants.All)]
-    [ProducesResponseType(typeof(GetClientsQueryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GridResponse<ClientDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IResult> GetClients(
-        [FromQuery] string? searchTerm,
-        [FromQuery] Guid? affiliateId,
-        [FromQuery] ClientStatus? status,
-        [FromQuery] bool? isProblematic,
-        [FromQuery] bool? isBonusAbuser,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+    public async Task<IResult> GetClients([FromQuery] GetClientsQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await SendAsync(
-            new GetClientsQuery(searchTerm, affiliateId, status, isProblematic, isBonusAbuser, pageNumber, pageSize),
-            cancellationToken);
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet("{id}")]
@@ -144,22 +136,20 @@ public class ClientsController(IMediator _send) : BaseController(_send)
 
     [HttpGet("by-affiliate/{affiliateId}")]
     [Permission(38, "View Clients by Affiliate", "Clients", ActionType.V, RoleConstants.All)]
-    [ProducesResponseType(typeof(GetClientsQueryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GridResponse<ClientDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetClientsByAffiliate(
         Guid affiliateId,
-        [FromQuery] string? searchTerm,
-        [FromQuery] ClientStatus? status,
-        [FromQuery] bool? isProblematic,
-        [FromQuery] bool? isBonusAbuser,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery] GetClientsQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await SendAsync(
-            new GetClientsQuery(searchTerm, affiliateId, status, isProblematic, isBonusAbuser, pageNumber, pageSize),
-            cancellationToken);
+        // Add affiliate filter
+        var filters = request.Filters ?? new Dictionary<string, GridFilterItem>();
+        filters["AffiliateId"] = new() { Field = "AffiliateId", Operator = "equals", Value = affiliateId };
+
+        // var modifiedRequest = request with { Filters = filters };
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet("by-affiliate/{affiliateId}/export")]
@@ -199,6 +189,7 @@ public class ClientsController(IMediator _send) : BaseController(_send)
             return ToResult(result);
 
         var fileName = $"client_import_template_{DateTime.UtcNow:yyyyMMdd}.xlsx";
-        return Results.File(result.Value!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        return Results.File(result.Value!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
     }
 }

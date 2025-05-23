@@ -1,12 +1,9 @@
-using CRM.Identity.Application.Common.Specifications.Affiliates;
 using CRM.Identity.Domain.Entities.Affiliate;
 
 namespace CRM.Identity.Application.Features.Affiliates.Commands.UpdateAffiliate;
 
 public sealed record UpdateAffiliateCommand(
     Guid Id,
-    string Name,
-    string Email,
     string? Phone,
     string? Website) : IRequest<Unit>;
 
@@ -18,16 +15,6 @@ public sealed class UpdateAffiliateCommandValidator : AbstractValidator<UpdateAf
             .NotEmpty()
             .WithMessage("Affiliate ID is required.");
 
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .MaximumLength(100)
-            .WithMessage("Name is required and cannot exceed 100 characters.");
-
-        RuleFor(x => x.Email)
-            .NotEmpty()
-            .EmailAddress()
-            .MaximumLength(200)
-            .WithMessage("A valid email address is required.");
 
         RuleFor(x => x.Phone)
             .MaximumLength(20)
@@ -55,18 +42,7 @@ public sealed class UpdateAffiliateCommandHandler(
             return Result.Failure<Unit>("Affiliate not found", "NotFound");
         }
 
-        var emailSpecification =
-            new AffiliateByEmailExcludingIdSpecification(request.Email.Trim().ToLower(), request.Id);
-        var existingAffiliate = await affiliateRepository.FirstOrDefaultAsync(emailSpecification, cancellationToken);
-
-        if (existingAffiliate != null)
-        {
-            return Result.Failure<Unit>("Affiliate with this email already exists", "Conflict");
-        }
-
         affiliate.UpdateDetails(
-            request.Name.Trim(),
-            request.Email.Trim().ToLower(),
             request.Phone?.Trim(),
             request.Website?.Trim());
 

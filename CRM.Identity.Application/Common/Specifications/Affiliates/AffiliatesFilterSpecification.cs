@@ -2,15 +2,15 @@ using CRM.Identity.Domain.Entities.Affiliate;
 
 namespace CRM.Identity.Application.Common.Specifications.Affiliates;
 
-public class AffiliatesFilterSpecification : BaseSpecification<Affiliate>
+public sealed class AffiliatesFilterSpecification : BaseSpecification<Affiliate>
 {
     public AffiliatesFilterSpecification(string? searchTerm, bool? isActive, int pageNumber = 1, int pageSize = 10)
     {
         var criteria = BuildCriteria(searchTerm, isActive);
         Criteria = criteria;
-        
+
         ApplyOrderByDescending(a => a.CreatedAt);
-        
+
         if (pageNumber > 0 && pageSize > 0)
         {
             ApplyPaging((pageNumber - 1) * pageSize, pageSize);
@@ -24,7 +24,7 @@ public class AffiliatesFilterSpecification : BaseSpecification<Affiliate>
         if (!string.IsNullOrEmpty(searchTerm))
         {
             var term = searchTerm.ToLower();
-            criteria = a => (a.Name.ToLower().Contains(term) || a.Email.ToLower().Contains(term));
+            criteria = a => (a.User!.FirstName.ToLower().Contains(term) || a.User.Email.ToLower().Contains(term));
         }
 
         if (isActive.HasValue)

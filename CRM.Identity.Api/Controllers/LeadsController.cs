@@ -1,3 +1,4 @@
+using CRM.Identity.Application.Common.Models.Grids;
 using CRM.Identity.Application.Features.Leads.Commands.ConvertLeadToClient;
 using CRM.Identity.Application.Features.Leads.Commands.CreateLead;
 using CRM.Identity.Application.Features.Leads.Commands.ImportLeads;
@@ -58,22 +59,13 @@ public class LeadsController(IMediator _send) : BaseController(_send)
 
     [HttpGet]
     [Permission(43, "View Leads", "Leads", ActionType.V, RoleConstants.All)]
-    [ProducesResponseType(typeof(GetLeadsQueryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IResult> GetLeads(
-        [FromQuery] string? searchTerm,
-        [FromQuery] ClientStatus? status,
-        [FromQuery] bool? isProblematic,
-        [FromQuery] string? country,
-        [FromQuery] string? source,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+    public async Task<IResult> GetLeads([FromQuery] GetLeadsQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await SendAsync(
-            new GetLeadsQuery(searchTerm, status, isProblematic, country, source, pageNumber, pageSize),
-            cancellationToken);
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet("{id}")]
@@ -128,62 +120,51 @@ public class LeadsController(IMediator _send) : BaseController(_send)
             fileName);
     }
 
+
     [HttpGet("by-country/{country}")]
     [Permission(47, "View Leads by Country", "Leads", ActionType.V, RoleConstants.All)]
-    [ProducesResponseType(typeof(GetLeadsQueryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetLeadsByCountry(
         string country,
-        [FromQuery] string? searchTerm,
-        [FromQuery] ClientStatus? status,
-        [FromQuery] bool? isProblematic,
-        [FromQuery] string? source,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery] GetLeadsQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await SendAsync(
-            new GetLeadsQuery(searchTerm, status, isProblematic, country, source, pageNumber, pageSize),
-            cancellationToken);
+        return await SendAsync(request, cancellationToken);
     }
+
 
     [HttpGet("by-source/{source}")]
     [Permission(48, "View Leads by Source", "Leads", ActionType.V, RoleConstants.All)]
-    [ProducesResponseType(typeof(GetLeadsQueryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetLeadsBySource(
         string source,
-        [FromQuery] string? searchTerm,
-        [FromQuery] ClientStatus? status,
-        [FromQuery] bool? isProblematic,
-        [FromQuery] string? country,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery] GetLeadsQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await SendAsync(
-            new GetLeadsQuery(searchTerm, status, isProblematic, country, source, pageNumber, pageSize),
-            cancellationToken);
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet("conversion-candidates")]
     [Permission(49, "View Lead Conversion Candidates", "Leads", ActionType.V, RoleConstants.AllExceptUser)]
-    [ProducesResponseType(typeof(GetLeadsQueryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GridResponse<LeadDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetLeadConversionCandidates(
-        [FromQuery] string? searchTerm,
-        [FromQuery] string? country,
-        [FromQuery] string? source,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery] GetLeadsQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await SendAsync(
-            new GetLeadsQuery(searchTerm, ClientStatus.Active, false, country, source, pageNumber, pageSize),
-            cancellationToken);
+        // Filter for conversion candidates (Active, not problematic)
+        var filters = new Dictionary<string, GridFilterItem>
+        {
+            ["Status"] = new() { Field = "Status", Operator = "equals", Value = ClientStatus.Active },
+            ["IsProblematic"] = new() { Field = "IsProblematic", Operator = "equals", Value = false }
+        };
+
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet("import-template")]
@@ -198,6 +179,7 @@ public class LeadsController(IMediator _send) : BaseController(_send)
             return ToResult(result);
 
         var fileName = $"lead_import_template_{DateTime.UtcNow:yyyyMMdd}.xlsx";
-        return Results.File(result.Value!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        return Results.File(result.Value!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
     }
 }

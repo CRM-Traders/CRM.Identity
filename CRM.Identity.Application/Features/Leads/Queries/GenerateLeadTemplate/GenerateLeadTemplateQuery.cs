@@ -1,7 +1,6 @@
 using ClosedXML.Excel;
 
 namespace CRM.Identity.Application.Features.Leads.Queries.GenerateLeadTemplate;
-
 public sealed record GenerateLeadTemplateQuery : IRequest<byte[]>;
 
 public sealed class GenerateLeadTemplateQueryHandler : IRequestHandler<GenerateLeadTemplateQuery, byte[]>
@@ -19,7 +18,7 @@ public sealed class GenerateLeadTemplateQueryHandler : IRequestHandler<GenerateL
             "Telephone",
             "Country",
             "Language",
-            "Date of Birth (YYYY-MM-DD)",
+            "Date of Birth (yyyy-MM-dd)",
             "Source"
         };
 
@@ -28,7 +27,7 @@ public sealed class GenerateLeadTemplateQueryHandler : IRequestHandler<GenerateL
             var cell = worksheet.Cell(1, i + 1);
             cell.Value = headers[i];
             cell.Style.Font.Bold = true;
-            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4ECDC4");
+            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#2196F3");
             cell.Style.Font.FontColor = XLColor.White;
             cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
@@ -36,13 +35,12 @@ public sealed class GenerateLeadTemplateQueryHandler : IRequestHandler<GenerateL
 
         var sampleData = new[]
         {
-            new[] { "Emma", "Johnson", "emma.johnson@email.com", "+1234567890", "USA", "en", "1988-03-25", "LinkedIn" },
             new[]
             {
-                "Pierre", "Dubois", "pierre.dubois@email.com", "+33123456789", "France", "fr", "1995-11-30",
-                "Google Search"
+                "John", "Smith", "john.smith@example.com", "+1234567890", "United States", "English", "1990-01-15", "Website"
             },
-            new[] { "Yuki", "Tanaka", "yuki.tanaka@email.com", "", "Japan", "ja", "1991-07-18", "Referral" }
+            new[] { "Jane", "Doe", "jane.doe@example.com", "+0987654321", "Canada", "English", "1985-05-20", "Social Media" },
+            new[] { "Bob", "Wilson", "bob.wilson@example.com", "", "United Kingdom", "English", "1992-12-10", "Referral" }
         };
 
         for (int row = 0; row < sampleData.Length; row++)
@@ -55,9 +53,31 @@ public sealed class GenerateLeadTemplateQueryHandler : IRequestHandler<GenerateL
 
                 if (row % 2 == 0)
                 {
-                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#E0F7F6");
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#E3F2FD");
                 }
             }
+        }
+
+        // Add notes/instructions
+        var notesStartRow = sampleData.Length + 4;
+        worksheet.Cell(notesStartRow, 1).Value = "Instructions:";
+        worksheet.Cell(notesStartRow, 1).Style.Font.Bold = true;
+        worksheet.Cell(notesStartRow, 1).Style.Font.FontColor = XLColor.Red;
+
+        var instructions = new[]
+        {
+            "• Fields marked with * are required",
+            "• Email must be unique and valid format",
+            "• Date of Birth format: yyyy-MM-dd (e.g., 1990-01-15)",
+            "• Telephone format: +[country code][number] (optional)",
+            "• A user account will be automatically created for each lead",
+            "• Generated passwords will be provided after import"
+        };
+
+        for (int i = 0; i < instructions.Length; i++)
+        {
+            worksheet.Cell(notesStartRow + 1 + i, 1).Value = instructions[i];
+            worksheet.Cell(notesStartRow + 1 + i, 1).Style.Font.FontSize = 10;
         }
 
         worksheet.Columns().AdjustToContents();

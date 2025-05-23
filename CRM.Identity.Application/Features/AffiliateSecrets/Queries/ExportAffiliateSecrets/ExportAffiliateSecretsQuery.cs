@@ -52,7 +52,8 @@ public sealed class ExportAffiliateSecretsQueryHandler(
 
             worksheet.Cell(row, 1).Value = secret.Id.ToString();
             worksheet.Cell(row, 2).Value = secret.AffiliateId.ToString();
-            worksheet.Cell(row, 3).Value = secret.Affiliate?.Name ?? "";
+            worksheet.Cell(row, 3).Value =
+                $"{secret.Affiliate?.User!.FirstName} {secret.Affiliate?.User!.LastName}" ?? "";
             worksheet.Cell(row, 4).Value = secret.SecretKey;
             worksheet.Cell(row, 5).Value = secret.ExpirationDate.ToString("yyyy-MM-dd HH:mm:ss");
             worksheet.Cell(row, 6).Value = secret.IpRestriction ?? "";
