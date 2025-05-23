@@ -10,7 +10,7 @@ namespace CRM.Identity.Api.Controllers;
 public class UsersController(IMediator _send) : BaseController(_send)
 {
     [HttpPost("register")]
-   // [Permission(1, "Register User", SectionConstants.Users, ActionType.C, RoleConstants.AllExceptUser)]
+    // [Permission(1, "Register User", SectionConstants.Users, ActionType.C, RoleConstants.AllExceptUser)]
     [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -47,7 +47,7 @@ public class UsersController(IMediator _send) : BaseController(_send)
     }
 
     [HttpGet("import-template")]
-   // [Permission(4, "Download User Import Template", SectionConstants.Users, ActionType.V, "Admin")]
+    // [Permission(4, "Download User Import Template", SectionConstants.Users, ActionType.V, "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetImportTemplate(CancellationToken cancellationToken)
@@ -61,12 +61,11 @@ public class UsersController(IMediator _send) : BaseController(_send)
         return Results.File(result.Value!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             fileName);
     }
-}
 
     [HttpPost]
     [Authorize]
     [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
-    public async Task<IResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellation) 
+    public async Task<IResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellation)
     {
         return await SendAsync(request, cancellation);
     }
