@@ -1,4 +1,9 @@
-﻿namespace CRM.Identity.Persistence.Databases;
+﻿using CRM.Identity.Domain.Entities.Affiliate;
+using CRM.Identity.Domain.Entities.Clients;
+using CRM.Identity.Domain.Entities.Leads;
+using CRM.Identity.Domain.Entities.TradingAccounts;
+
+namespace CRM.Identity.Persistence.Databases;
 
 public class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options,
@@ -10,7 +15,11 @@ public class ApplicationDbContext(
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
     public DbSet<RoleDefaultPermission> RoleDefaultPermissions => Set<RoleDefaultPermission>();
-
+    public DbSet<Affiliate> Affiliates => Set<Affiliate>();
+    public DbSet<AffiliateSecret> AffiliateSecrets => Set<AffiliateSecret>();
+    public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<Client> Clients => Set<Client>();
+    public DbSet<TradingAccount> TradingAccounts => Set<TradingAccount>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

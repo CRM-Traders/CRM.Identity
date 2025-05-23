@@ -11,7 +11,6 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
 {
     [HttpPost("grant")]
     [Permission(1, "Grant Permission", "Permissions", ActionType.C, RoleConstants.Admin)]
-    [PermissionAuthorize("Grant Permission","Permissions",  ActionType.C)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -23,7 +22,6 @@ public class PermissionsController(IMediator _send) : BaseController(_send)
 
     [HttpPost("revoke")]
     [Permission(2, "Revoke Permission", "Permissions", ActionType.D, RoleConstants.Admin)]
-    [PermissionAuthorize("Revoke Permission", "Permissions", ActionType.D)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

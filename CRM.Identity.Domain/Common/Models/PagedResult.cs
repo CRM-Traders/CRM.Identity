@@ -28,7 +28,7 @@ public class PagedResult<TValue> : Result<IReadOnlyList<TValue>>
         return new PagedResult<TValue>(items, totalCount, page, pageSize, true, null, null, null, metadata?.AsReadOnly());
     }
 
-    public static PagedResult<TValue> Failure(string error, string? errorCode = null, Dictionary<string, object>? metadata = null)
+    public new static PagedResult<TValue> Failure(string error, string? errorCode = null, Dictionary<string, object>? metadata = null)
     {
         return new PagedResult<TValue>(Array.Empty<TValue>().ToList().AsReadOnly(), 0, 1, 10, false, error, errorCode, null, metadata?.AsReadOnly());
     }

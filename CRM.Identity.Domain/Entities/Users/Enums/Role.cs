@@ -6,5 +6,7 @@ public enum Role
     None = 0,
     User = 1,
     Manager = 2,
-    Admin = 3
+    Admin = 3,
+    SuperUser = 4,
+    
 }

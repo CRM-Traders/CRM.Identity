@@ -9,8 +9,7 @@ global using CRM.Identity.Application.Features.Auth.Commands.InvalidateAllSessio
 global using CRM.Identity.Application.Features.Auth.Commands.Login;
 global using CRM.Identity.Application.Features.Auth.Commands.Logout;
 global using CRM.Identity.Application.Features.Auth.Commands.RefreshTokens;
-global using CRM.Identity.Application.Features.Users.Commands;
-global using CRM.Identity.Domain.Common.Attributes;
+global using CRM.Identity.Application.Features.Users.Commands; 
 global using CRM.Identity.Domain.Common.Models;
 global using CRM.Identity.Domain.Entities.Permissions.Enums;
 global using CRM.Identity.Domain.Entities.Users.Enums;

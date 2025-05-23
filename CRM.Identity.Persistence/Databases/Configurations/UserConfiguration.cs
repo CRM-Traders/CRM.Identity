@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using CRM.Identity.Domain.Common.Extensions;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -25,7 +26,16 @@ public class UserConfiguration : AuditableEntityTypeConfiguration<User>
             .HasMaxLength(100);
 
         builder.HasIndex(u => u.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("IX_User_Email");
+
+        builder.Property(u => u.Username)
+            .IsRequired()
+            .HasMaxLength(30);
+
+        builder.HasIndex(u => u.Username)
+            .IsUnique()
+            .HasDatabaseName("IX_User_Username");
 
         builder.Property(u => u.PhoneNumber)
             .HasMaxLength(20);
@@ -39,7 +49,7 @@ public class UserConfiguration : AuditableEntityTypeConfiguration<User>
         builder.Property(u => u.Role)
             .HasConversion<string>()
             .HasMaxLength(20);
- 
+
         builder.Property(u => u.IsTwoFactorEnabled)
             .IsRequired()
             .HasDefaultValue(false);
@@ -51,7 +61,7 @@ public class UserConfiguration : AuditableEntityTypeConfiguration<User>
         builder.Property(u => u.IsTwoFactorVerified)
             .IsRequired()
             .HasDefaultValue(false);
- 
+
         var recoveryCodesConverter = new ValueConverter<List<string>, string>(
             v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
             v => JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>());
@@ -66,11 +76,12 @@ public class UserConfiguration : AuditableEntityTypeConfiguration<User>
             .Metadata.SetValueComparer(recoveryCodesComparer);
 
         builder.Property(u => u.RecoveryCodes)
-            .HasColumnType("jsonb")  
+            .HasColumnType("jsonb")
             .IsRequired(false)
             .HasDefaultValueSql("'[]'::jsonb");
- 
+
         builder.HasIndex(u => u.IsTwoFactorEnabled)
-            .HasFilter("\"IsTwoFactorEnabled\" = true");
+            .HasFilter("\"IsTwoFactorEnabled\" = true")
+            .HasDatabaseName("IX_User_IsTwoFactorEnabled");
     }
 }
