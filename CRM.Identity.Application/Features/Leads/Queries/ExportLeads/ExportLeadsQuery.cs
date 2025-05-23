@@ -22,7 +22,8 @@ public sealed class ExportLeadsQueryHandler(
             request.Status,
             request.IsProblematic,
             request.Country,
-            request.Source);
+            request.Source,
+            includeUser: true);
 
         var leads = await leadRepository.ListAsync(specification, cancellationToken);
 
@@ -35,7 +36,8 @@ public sealed class ExportLeadsQueryHandler(
             "ID", "First Name", "Last Name", "Email", "Telephone", "Second Telephone", "Skype",
             "Country", "Language", "Date of Birth", "Status", "KYC Status", "Sales Status",
             "Is Problematic", "Is Bonus Abuser", "Bonus Abuser Reason", "Registration Date",
-            "Registration IP", "Source", "Last Login", "Last Communication"
+            "Registration IP", "Source", "Last Login", "Last Communication",
+            "User ID", "Username", "User Email", "User Phone", "User Role"
         };
 
         for (int i = 0; i < headers.Length; i++)
@@ -75,6 +77,13 @@ public sealed class ExportLeadsQueryHandler(
             worksheet.Cell(row, 19).Value = lead.Source ?? "";
             worksheet.Cell(row, 20).Value = lead.LastLogin?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
             worksheet.Cell(row, 21).Value = lead.LastCommunication?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+
+            // User information
+            worksheet.Cell(row, 22).Value = lead.User?.Id.ToString() ?? "";
+            worksheet.Cell(row, 23).Value = lead.User?.Username ?? "";
+            worksheet.Cell(row, 24).Value = lead.User?.Email ?? "";
+            worksheet.Cell(row, 25).Value = lead.User?.PhoneNumber ?? "";
+            worksheet.Cell(row, 26).Value = lead.User?.Role.ToString() ?? "";
         }
 
         // Auto-fit columns

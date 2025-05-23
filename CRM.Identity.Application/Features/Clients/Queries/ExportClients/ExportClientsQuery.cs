@@ -73,7 +73,7 @@ public sealed class ExportClientsQueryHandler(
             worksheet.Cell(row, 14).Value = client.BonusAbuserReason ?? "";
             worksheet.Cell(row, 15).Value = client.HasInvestments ? "Yes" : "No";
             worksheet.Cell(row, 16).Value = client.AffiliateId.ToString();
-            worksheet.Cell(row, 17).Value = client.Affiliate?.Name ?? "";
+            worksheet.Cell(row, 17).Value =$"{client.Affiliate?.User!.FirstName} {client.Affiliate?.User!.LastName}"   ?? "";
             worksheet.Cell(row, 18).Value = client.FTDTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
             worksheet.Cell(row, 19).Value = client.LTDTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
             worksheet.Cell(row, 20).Value = client.QualificationTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";

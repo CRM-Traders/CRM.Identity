@@ -35,8 +35,8 @@ public sealed class GetAffiliateByIdQueryHandler(
 
         var response = new AffiliateDetailDto(
             affiliate.Id,
-            affiliate.Name,
-            affiliate.Email,
+            $"{affiliate.User!.FirstName} {affiliate.User.LastName}",
+            affiliate.User.Email,
             affiliate.Phone,
             affiliate.Website,
             affiliate.IsActive,

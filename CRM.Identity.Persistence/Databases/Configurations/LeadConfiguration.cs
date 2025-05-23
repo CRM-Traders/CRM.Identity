@@ -157,7 +157,12 @@ public class LeadConfiguration : AuditableEntityTypeConfiguration<Lead>
         builder.Property(l => l.AnonymousCall)
             .IsRequired()
             .HasDefaultValue(false);
-
+        builder.Property(up => up.UserId)
+            .IsRequired();
+        builder.HasOne(up => up.User)
+            .WithMany()
+            .HasForeignKey(up => up.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
         // Indexes
         builder.HasIndex(l => l.Status);
         builder.HasIndex(l => l.Country);

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using CRM.Identity.Application.Common.Specifications.Clients;
 using CRM.Identity.Application.Common.Specifications.Leads;
 using CRM.Identity.Domain.Entities.Clients;
@@ -13,7 +15,12 @@ public sealed record CreateLeadCommand(
     string? Country,
     string? Language,
     DateTime? DateOfBirth,
-    string? Source) : IRequest<Guid>;
+    string? Source) : IRequest<CreateLeadResult>;
+
+public sealed record CreateLeadResult(
+    Guid LeadId,
+    Guid UserId,
+    string GeneratedPassword);
 
 public sealed class CreateLeadCommandValidator : AbstractValidator<CreateLeadCommand>
 {
@@ -61,10 +68,13 @@ public sealed class CreateLeadCommandValidator : AbstractValidator<CreateLeadCom
 public sealed class CreateLeadCommandHandler(
     IRepository<Lead> leadRepository,
     IRepository<Client> clientRepository,
+    IRepository<User> userRepository,
+    IPasswordService passwordService,
     IUnitOfWork unitOfWork,
-    IUserContext userContext) : IRequestHandler<CreateLeadCommand, Guid>
+    IUserContext userContext) : IRequestHandler<CreateLeadCommand, CreateLeadResult>
 {
-    public async ValueTask<Result<Guid>> Handle(CreateLeadCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result<CreateLeadResult>> Handle(CreateLeadCommand request,
+        CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLower();
 
@@ -74,7 +84,7 @@ public sealed class CreateLeadCommandHandler(
 
         if (existingLead != null)
         {
-            return Result.Failure<Guid>("Lead with this email already exists", "Conflict");
+            return Result.Failure<CreateLeadResult>("Lead with this email already exists", "Conflict");
         }
 
         // Check if already exists as client
@@ -83,8 +93,30 @@ public sealed class CreateLeadCommandHandler(
 
         if (existingClient != null)
         {
-            return Result.Failure<Guid>("Client with this email already exists", "Conflict");
+            return Result.Failure<CreateLeadResult>("Client with this email already exists", "Conflict");
         }
+
+        // Check if user exists
+        var existingUser = await userRepository.FirstOrDefaultAsync(
+            new UserByEmailOrUsernameSpec(email, email), cancellationToken);
+
+        if (existingUser != null)
+        {
+            return Result.Failure<CreateLeadResult>("User with this email already exists", "Conflict");
+        }
+
+        var generatedPassword = GenerateStrongPassword();
+        var hashedPassword = passwordService.HashPasword(generatedPassword, out var salt);
+        var saltString = Convert.ToBase64String(salt);
+
+        var user = new User(
+            request.FirstName.Trim(),
+            request.LastName.Trim(),
+            email,
+            email,
+            request.Telephone?.Trim(),
+            hashedPassword,
+            saltString);
 
         var lead = new Lead(
             request.FirstName.Trim(),
@@ -97,11 +129,63 @@ public sealed class CreateLeadCommandHandler(
             userContext.IpAddress,
             "CRM System",
             "Web",
-            request.Source?.Trim());
+            request.Source?.Trim())
+        {
+            UserId = user.Id
+        };
 
+        await userRepository.AddAsync(user, cancellationToken);
         await leadRepository.AddAsync(lead, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(lead.Id);
+        return Result.Success(new CreateLeadResult(lead.Id, user.Id, generatedPassword));
+    }
+
+    private static string GenerateStrongPassword()
+    {
+        const string upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        const string digits = "0123456789";
+        const string specialChars = "!@#$%^&*()_-+=<>?";
+
+        var password = new StringBuilder();
+        using var rng = RandomNumberGenerator.Create();
+
+        password.Append(GetRandomChar(upperCase, rng));
+        password.Append(GetRandomChar(lowerCase, rng));
+        password.Append(GetRandomChar(digits, rng));
+        password.Append(GetRandomChar(specialChars, rng));
+
+        var allChars = upperCase + lowerCase + digits + specialChars;
+        for (int i = 0; i < 8; i++)
+        {
+            password.Append(GetRandomChar(allChars, rng));
+        }
+
+        return ShuffleString(password.ToString(), rng);
+    }
+
+    private static char GetRandomChar(string chars, RandomNumberGenerator rng)
+    {
+        var data = new byte[4];
+        rng.GetBytes(data);
+        var value = BitConverter.ToUInt32(data, 0);
+        return chars[(int)(value % (uint)chars.Length)];
+    }
+
+    private static string ShuffleString(string input, RandomNumberGenerator rng)
+    {
+        var array = input.ToCharArray();
+        var n = array.Length;
+        while (n > 1)
+        {
+            var data = new byte[4];
+            rng.GetBytes(data);
+            var k = (int)(BitConverter.ToUInt32(data, 0) % (uint)n);
+            n--;
+            (array[n], array[k]) = (array[k], array[n]);
+        }
+
+        return new string(array);
     }
 }

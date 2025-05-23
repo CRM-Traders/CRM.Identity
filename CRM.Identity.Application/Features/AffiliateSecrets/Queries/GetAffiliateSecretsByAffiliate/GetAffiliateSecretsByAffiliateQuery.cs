@@ -20,7 +20,7 @@ public sealed class GetAffiliateSecretsByAffiliateQueryHandler(
         var affiliateSecretDtos = affiliateSecrets.Select(s => new AffiliateSecretDto(
             s.Id,
             s.AffiliateId,
-            s.Affiliate?.Name,
+            $"{s.Affiliate?.User!.FirstName} | {s.Affiliate?.User!.LastName}",
             s.SecretKey,
             s.ExpirationDate,
             s.IpRestriction,

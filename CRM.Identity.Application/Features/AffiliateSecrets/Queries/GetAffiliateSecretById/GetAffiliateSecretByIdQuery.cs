@@ -37,8 +37,8 @@ public sealed class GetAffiliateSecretByIdQueryHandler(
         var response = new AffiliateSecretDetailDto(
             affiliateSecret.Id,
             affiliateSecret.AffiliateId,
-            affiliateSecret.Affiliate?.Name,
-            affiliateSecret.Affiliate?.Email,
+            $"{affiliateSecret.Affiliate?.User!.FirstName} {affiliateSecret.Affiliate?.User!.LastName}",
+            affiliateSecret.Affiliate?.User!.Email,
             affiliateSecret.SecretKey,
             affiliateSecret.ExpirationDate,
             affiliateSecret.IpRestriction,

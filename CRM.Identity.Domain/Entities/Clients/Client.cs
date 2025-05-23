@@ -6,7 +6,6 @@ public class Client : ClientBase
 {
     public Affiliate.Affiliate? Affiliate { get; private set; }
     public Guid AffiliateId { get; private set; }
-
     private Client()
     {
     }

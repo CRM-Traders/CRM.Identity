@@ -1,7 +1,6 @@
 using ClosedXML.Excel;
 
 namespace CRM.Identity.Application.Features.Clients.Queries.GenerateClientTemplate;
-
 public sealed record GenerateClientTemplateQuery : IRequest<byte[]>;
 
 public sealed class GenerateClientTemplateQueryHandler : IRequestHandler<GenerateClientTemplateQuery, byte[]>
@@ -20,7 +19,7 @@ public sealed class GenerateClientTemplateQueryHandler : IRequestHandler<Generat
             "Telephone",
             "Country",
             "Language",
-            "Date of Birth (YYYY-MM-DD)",
+            "Date of Birth (yyyy-MM-dd)",
             "Source"
         };
 
@@ -29,7 +28,7 @@ public sealed class GenerateClientTemplateQueryHandler : IRequestHandler<Generat
             var cell = worksheet.Cell(1, i + 1);
             cell.Value = headers[i];
             cell.Style.Font.Bold = true;
-            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FF6B6B");
+            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4CAF50");
             cell.Style.Font.FontColor = XLColor.White;
             cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
@@ -37,9 +36,12 @@ public sealed class GenerateClientTemplateQueryHandler : IRequestHandler<Generat
 
         var sampleData = new[]
         {
-            new[] { "John", "Smith", "john.smith@email.com", "550e8400-e29b-41d4-a716-446655440000", "+44123456789", "UK", "en", "1990-05-15", "Google Ads" },
-            new[] { "Maria", "Garcia", "maria.garcia@email.com", "550e8400-e29b-41d4-a716-446655440000", "+34987654321", "Spain", "es", "1985-08-22", "Facebook" },
-            new[] { "Li", "Wang", "li.wang@email.com", "550e8400-e29b-41d4-a716-446655440001", "", "China", "zh", "1992-01-10", "Organic" }
+            new[]
+            {
+                "John", "Smith", "john.smith@example.com", "00000000-0000-0000-0000-000000000001", "+1234567890", "United States", "English", "1990-01-15", "Website"
+            },
+            new[] { "Jane", "Doe", "jane.doe@example.com", "00000000-0000-0000-0000-000000000002", "+0987654321", "Canada", "English", "1985-05-20", "Social Media" },
+            new[] { "Bob", "Wilson", "bob.wilson@example.com", "00000000-0000-0000-0000-000000000001", "", "United Kingdom", "English", "1992-12-10", "Referral" }
         };
 
         for (int row = 0; row < sampleData.Length; row++)
@@ -49,12 +51,35 @@ public sealed class GenerateClientTemplateQueryHandler : IRequestHandler<Generat
                 var cell = worksheet.Cell(row + 2, col + 1);
                 cell.Value = sampleData[row][col];
                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                
+
                 if (row % 2 == 0)
                 {
-                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFE5E5");
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#E8F5E9");
                 }
             }
+        }
+
+        // Add notes/instructions
+        var notesStartRow = sampleData.Length + 4;
+        worksheet.Cell(notesStartRow, 1).Value = "Instructions:";
+        worksheet.Cell(notesStartRow, 1).Style.Font.Bold = true;
+        worksheet.Cell(notesStartRow, 1).Style.Font.FontColor = XLColor.Red;
+
+        var instructions = new[]
+        {
+            "• Fields marked with * are required",
+            "• Email must be unique and valid format",
+            "• Affiliate ID must be valid GUID format and exist in system",
+            "• Date of Birth format: yyyy-MM-dd (e.g., 1990-01-15)",
+            "• Telephone format: +[country code][number] (optional)",
+            "• A user account will be automatically created for each client",
+            "• Generated passwords will be provided after import"
+        };
+
+        for (int i = 0; i < instructions.Length; i++)
+        {
+            worksheet.Cell(notesStartRow + 1 + i, 1).Value = instructions[i];
+            worksheet.Cell(notesStartRow + 1 + i, 1).Style.Font.FontSize = 10;
         }
 
         worksheet.Columns().AdjustToContents();

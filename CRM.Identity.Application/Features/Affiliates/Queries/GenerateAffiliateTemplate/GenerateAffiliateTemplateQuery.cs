@@ -15,6 +15,8 @@ public sealed class GenerateAffiliateTemplateQueryHandler : IRequestHandler<Gene
         {
             "Name*",
             "Email*",
+            "First Name*",
+            "Last Name*",
             "Phone",
             "Website"
         };
@@ -34,10 +36,10 @@ public sealed class GenerateAffiliateTemplateQueryHandler : IRequestHandler<Gene
         {
             new[]
             {
-                "Digital Marketing Pro", "contact@digitalmarketing.com", "+1234567890", "https://digitalmarketing.com"
+                "Digital Marketing Pro", "contact@digitalmarketing.com", "John", "Smith", "+1234567890", "https://digitalmarketing.com"
             },
-            new[] { "Social Media Experts", "info@socialmedia.com", "+0987654321", "https://socialmedia.com" },
-            new[] { "Content Creators Hub", "hello@contentcreators.com", "", "https://contentcreators.com" }
+            new[] { "Social Media Experts", "info@socialmedia.com", "Jane", "Doe", "+0987654321", "https://socialmedia.com" },
+            new[] { "Content Creators Hub", "hello@contentcreators.com", "Bob", "Wilson", "", "https://contentcreators.com" }
         };
 
         for (int row = 0; row < sampleData.Length; row++)

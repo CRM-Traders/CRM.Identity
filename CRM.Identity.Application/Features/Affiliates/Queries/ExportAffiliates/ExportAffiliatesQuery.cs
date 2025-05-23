@@ -40,8 +40,8 @@ public sealed class ExportAffiliatesQueryHandler(
             var row = i + 2;
 
             worksheet.Cell(row, 1).Value = affiliate.Id.ToString();
-            worksheet.Cell(row, 2).Value = affiliate.Name;
-            worksheet.Cell(row, 3).Value = affiliate.Email;
+            worksheet.Cell(row, 2).Value = $"{affiliate.User!.FirstName} {affiliate.User!.LastName}";
+            worksheet.Cell(row, 3).Value = affiliate.User.Email;
             worksheet.Cell(row, 4).Value = affiliate.Phone ?? "";
             worksheet.Cell(row, 5).Value = affiliate.Website ?? "";
             worksheet.Cell(row, 6).Value = affiliate.IsActive ? "Yes" : "No";
