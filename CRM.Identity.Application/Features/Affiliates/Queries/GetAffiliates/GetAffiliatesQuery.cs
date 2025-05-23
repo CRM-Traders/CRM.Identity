@@ -11,6 +11,7 @@ public sealed class GetAffiliatesQuery : GridQueryBase, IRequest<GridResponse<Af
 
 public sealed record AffiliateDto(
     Guid Id,
+    Guid UserId,
     string Name,
     string Email,
     string? Phone,
@@ -34,6 +35,7 @@ public sealed class GetAffiliatesQueryHandler(
             request,
             affiliate => new AffiliateDto(
                 affiliate.Id,
+                affiliate.UserId,
                 affiliate.User!.FirstName,
                 affiliate.User.Email,
                 affiliate.Phone,
