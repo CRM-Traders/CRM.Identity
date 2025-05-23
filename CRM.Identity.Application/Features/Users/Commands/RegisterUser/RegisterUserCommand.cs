@@ -1,6 +1,6 @@
-﻿namespace CRM.Identity.Application.Features.Users.Commands;
+﻿namespace CRM.Identity.Application.Features.Users.Commands.RegisterUser;
 
-public sealed record RegisterCommand(
+public sealed record RegisterUserCommand(
     string FirstName,
     string LastName,
     string Email,
@@ -8,9 +8,9 @@ public sealed record RegisterCommand(
     string Password,
     string? PhoneNumber) : IRequest<Unit>;
 
-public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
+public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
-    public RegisterCommandValidator()
+    public RegisterUserCommandValidator()
     {
         RuleFor(x => x.FirstName)
             .NotEmpty()
@@ -45,12 +45,12 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
     }
 }
 
-public sealed class RegisterCommandHandler(
+public sealed class RegisterUserCommandHandler(
     IRepository<User> _userRepository,
     IPasswordService _passwordService,
-    IUnitOfWork _unitOfWork) : IRequestHandler<RegisterCommand, Unit>
+    IUnitOfWork _unitOfWork) : IRequestHandler<RegisterUserCommand, Unit>
 {
-    public async ValueTask<Result<Unit>> Handle(RegisterCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result<Unit>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         // Check if email already exists
         var userEmailSpecification = new UserByEmailSpecification(request.Email.Trim().ToLower());

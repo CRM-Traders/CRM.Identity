@@ -1,4 +1,6 @@
-﻿using CRM.Identity.Application.Features.Users.Commands.ImportUsers;
+﻿using CRM.Identity.Application.Features.Users.Commands.ChangePassword;
+using CRM.Identity.Application.Features.Users.Commands.RegisterUser;
+using CRM.Identity.Application.Features.Users.Commands.ImportUsers;
 using CRM.Identity.Application.Features.Users.Queries.GenerateUserTemplate;
 using CRM.Identity.Application.Features.Users.Queries.UserSettings;
 using CRM.Identity.Infrastructure.Attributes;
@@ -12,7 +14,7 @@ public class UsersController(IMediator _send) : BaseController(_send)
     [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IResult> Register([FromBody] RegisterCommand command, CancellationToken cancellationToken)
+    public async Task<IResult> Register([FromBody] RegisterUserCommand command, CancellationToken cancellationToken)
     {
         return await SendAsync(command, cancellationToken);
     }
@@ -58,5 +60,14 @@ public class UsersController(IMediator _send) : BaseController(_send)
         var fileName = $"user_import_template_{DateTime.UtcNow:yyyyMMdd}.xlsx";
         return Results.File(result.Value!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             fileName);
+    }
+}
+
+    [HttpPost]
+    [Authorize]
+    [ProducesResponseType(typeof(Unit), StatusCodes.Status200OK)]
+    public async Task<IResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellation) 
+    {
+        return await SendAsync(request, cancellation);
     }
 }

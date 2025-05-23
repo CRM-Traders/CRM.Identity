@@ -77,4 +77,12 @@ public class User : AggregateRoot
         }
         return false;
     }
+
+    public void ChangePassword(string passwordHash, string passwordSalt) 
+    {
+        PasswordHash = passwordHash;
+        PasswordSalt = passwordSalt;
+
+        AddDomainEvent(new ChangePasswordEvent(Id, GetType().Name, passwordHash, passwordSalt));
+    }
 }
