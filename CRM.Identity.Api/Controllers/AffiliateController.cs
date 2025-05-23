@@ -53,7 +53,7 @@ public class AffiliatesController(IMediator _send) : BaseController(_send)
         return await SendAsync(new DeleteAffiliateCommand(id), cancellationToken);
     }
 
-    [HttpPost]
+    [HttpPost("grid")]
     ////[Permission(13, "View Affiliates", "Affiliates", ActionType.V, RoleConstants.All)]
     [ProducesResponseType(typeof(GridResponse<AffiliateDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
