@@ -4,6 +4,7 @@ using CRM.Identity.Application.Features.Clients.Commands.ChangeClientStatus;
 using CRM.Identity.Application.Features.Clients.Commands.CreateClient;
 using CRM.Identity.Application.Features.Clients.Commands.ImportClients;
 using CRM.Identity.Application.Features.Clients.Commands.UpdateClient;
+using CRM.Identity.Application.Features.Clients.Queries.ClientsGrid;
 using CRM.Identity.Application.Features.Clients.Queries.ExportClients;
 using CRM.Identity.Application.Features.Clients.Queries.GenerateClientTemplate;
 using CRM.Identity.Application.Features.Clients.Queries.GetClientById;
@@ -107,6 +108,34 @@ public class ClientsController(IMediator _send) : BaseController(_send)
         var fileContent = memoryStream.ToArray();
 
         return await SendAsync(new ImportClientsCommand(fileContent), cancellationToken);
+    }
+
+    [HttpPost("insert-clients")]
+    [RequireSecret]
+    //[Permission(36, "Import Clients", "Clients", ActionType.C, RoleConstants.AllExceptUser)]
+    [ProducesResponseType(typeof(ImportClientsResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IResult> InsertClients(IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file == null || file.Length == 0)
+            return Results.BadRequest("File is required");
+
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream, cancellationToken);
+        var fileContent = memoryStream.ToArray();
+
+        return await SendAsync(new ImportClientsCommand(fileContent), cancellationToken);
+    }
+
+    [HttpGet("grid")]
+    [ProducesResponseType(typeof(GridResponse<ClientsGridQueryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IResult> GetClientsGrid([FromQuery] ClientsGridQuery request,
+        CancellationToken cancellationToken = default)
+    {
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet("export")]

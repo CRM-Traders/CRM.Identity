@@ -1,3 +1,4 @@
+using CRM.Identity.Api.Middleware;
 using CRM.Identity.Api.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +26,7 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 {
     app.UseCors("AllowAll");
-
+    app.UseMiddleware<SecretKeyMiddleware>();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
 
     if (app.Environment.IsDevelopment())

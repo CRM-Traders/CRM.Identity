@@ -7,6 +7,7 @@ using CRM.Identity.Application.Features.Leads.Queries.ExportLeads;
 using CRM.Identity.Application.Features.Leads.Queries.GenerateLeadTemplate;
 using CRM.Identity.Application.Features.Leads.Queries.GetLeadById;
 using CRM.Identity.Application.Features.Leads.Queries.GetLeads;
+using CRM.Identity.Application.Features.Leads.Queries.LeadsGrid;
 using CRM.Identity.Domain.Entities.Clients.Enums;
 using CRM.Identity.Infrastructure.Attributes;
 
@@ -55,6 +56,16 @@ public class LeadsController(IMediator _send) : BaseController(_send)
             return Results.BadRequest("Lead ID mismatch");
 
         return await SendAsync(command, cancellationToken);
+    }
+
+    [HttpGet("grid")]
+    [ProducesResponseType(typeof(GridResponse<LeadsGridQueryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IResult> GetLeadsGrid([FromQuery] LeadsGridQuery request,
+        CancellationToken cancellationToken = default)
+    {
+        return await SendAsync(request, cancellationToken);
     }
 
     [HttpGet]

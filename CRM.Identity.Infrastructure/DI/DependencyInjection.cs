@@ -19,7 +19,7 @@ public static class DependencyInjection
 
         services.AddOptions(configuration);
         services.AddRedisConnection();
-
+        services.AddSecretAuthentication();
         services.AddAsymmetricAuthentication(configuration);
 
         services.AddHostedService<OutboxProcessorWorker>();
@@ -91,6 +91,16 @@ public static class DependencyInjection
 
             return ConnectionMultiplexer.Connect(configOptions);
         });
+    }
+
+    private static IServiceCollection AddSecretAuthentication(this IServiceCollection services)
+    {
+        services.AddMemoryCache(options => { options.CompactionPercentage = 0.20; });
+
+        services.AddSingleton<IUsageTracker, UsageTracker>();
+        services.AddScoped<ISecretValidationService, SecretValidationService>();
+
+        return services;
     }
 
     private static void AddEventHandlers(this IServiceCollection services)

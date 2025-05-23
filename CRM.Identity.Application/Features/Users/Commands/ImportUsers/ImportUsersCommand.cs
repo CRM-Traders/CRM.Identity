@@ -87,7 +87,7 @@ public sealed class ImportUsersCommandHandler(
                         continue;
                     }
 
-                    var generatedPassword = GenerateStrongPassword();
+                    var generatedPassword = passwordService.GenerateStrongPassword();
                     var hashedPassword = passwordService.HashPasword(generatedPassword, out var salt);
                     var saltString = Convert.ToBase64String(salt);
 
@@ -114,53 +114,5 @@ public sealed class ImportUsersCommandHandler(
         {
             return Result.Failure<ImportUsersResult>($"Error processing file: {ex.Message}");
         }
-    }
-
-    private static string GenerateStrongPassword()
-    {
-        const string upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const string lowerCase = "abcdefghijklmnopqrstuvwxyz";
-        const string digits = "0123456789";
-        const string specialChars = "!@#$%^&*()_-+=<>?";
-
-        var password = new StringBuilder();
-        using var rng = RandomNumberGenerator.Create();
-
-        password.Append(GetRandomChar(upperCase, rng));
-        password.Append(GetRandomChar(lowerCase, rng));
-        password.Append(GetRandomChar(digits, rng));
-        password.Append(GetRandomChar(specialChars, rng));
-
-        var allChars = upperCase + lowerCase + digits + specialChars;
-        for (int i = 0; i < 8; i++)
-        {
-            password.Append(GetRandomChar(allChars, rng));
-        }
-
-        return ShuffleString(password.ToString(), rng);
-    }
-
-    private static char GetRandomChar(string chars, RandomNumberGenerator rng)
-    {
-        var data = new byte[4];
-        rng.GetBytes(data);
-        var value = BitConverter.ToUInt32(data, 0);
-        return chars[(int)(value % (uint)chars.Length)];
-    }
-
-    private static string ShuffleString(string input, RandomNumberGenerator rng)
-    {
-        var array = input.ToCharArray();
-        var n = array.Length;
-        while (n > 1)
-        {
-            var data = new byte[4];
-            rng.GetBytes(data);
-            var k = (int)(BitConverter.ToUInt32(data, 0) % (uint)n);
-            n--;
-            (array[n], array[k]) = (array[k], array[n]);
-        }
-
-        return new string(array);
     }
 }
